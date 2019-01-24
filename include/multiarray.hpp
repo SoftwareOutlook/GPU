@@ -2,7 +2,7 @@
 #define MULTIARRAY_HPP
 
 #include <vector>
-#include "complex"
+#include "complex.hpp"
 
 
 template<class T> class multiarray{
@@ -97,6 +97,9 @@ public:
   inline T get(const size_t i) const {
     return t[i];   
   }
+  inline void set(const size_t i, const T& i_t) {
+    t[i]=i_t;
+  }
   inline multiarray operator+(const multiarray& other){
     multiarray result(dimensions);
     for(size_t i=0; i<size(); ++i){
@@ -142,7 +145,7 @@ public:
   double norm() const{
     double N=0;
     for(size_t i=0; i<size(); ++i){
-      N=N+::norm(t[i]);   
+      N=N+abs(t[i]);   
     }
     return N;
   }

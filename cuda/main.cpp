@@ -4,6 +4,11 @@
 #include "stopwatch.hpp"
 #include "multiarray.hpp"
 #include <vector>
+#include <cuda.h>
+#include <cuda_runtime.h>
+#include "cudaproduct.cuh"
+#include "fftcuda.hpp"
+#include <omp.h>
 using namespace std;
 
 
@@ -66,149 +71,92 @@ int main(int argc, char** argv){
     for(i=0; i<n_coils; ++i){
       coils.push_back(coil);   
     }
-    
+   
     // Multiplied signals
     std::vector<multiarray<double>> multiplied_signals;
     std::vector<multiarray<::complex>> transforms;
     std::vector<multiarray<double>> inverse_transforms;
     for(i=0; i<n_coils; ++i){
-      multiplied_signals.push_back(sig*coils[i]); 
+      // multiplied_signals.push_back(sig*coils[i]);
+      multiplied_signals.push_back(multiarray<double>({n_x[0]}));
       transforms.push_back(multiarray<::complex>({n_x[0]/2+1}));
       inverse_transforms.push_back(multiarray<double>({n_x[0]}));
     }
-    
 
+    std::cout << "    Multiplication\n";
 
-
-    /*
-    // FFTW
-    std::cout << "    FFTW\n";
-    std::cout << "      Direct\n";
-    
-    fftw_r2c fw(n_dimensions, n_x);
+    // CPU
+    std::cout << "      CPU\n";
     sw.start();
     for(i=0; i<n_coils; ++i){
-      fw.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
+      multiplied_signals[i]=sig*coils[i];
     }
     sw.stop();
     std::cout << "        Time:  " << sw.get() << " s\n";
-    
-    
-    std::cout << "      Inverse\n";
-    
-    fftw_r2c fwi(n_dimensions, n_x, true);
-    sw.start();
-    for(i=0; i<n_coils; ++i){
-      fwi.compute(inverse_transforms[i].pointer(), transforms[i].pointer());
-    }
-    sw.stop();
-    std::cout << "        Time:  " << sw.get() << " s\n";
-    
-    error=0;
-    for(i=0; i<n_coils; ++i){
-      error=error+(multiplied_signals[i]-inverse_transforms[i]).norm();
-    }
-    std::cout << "      Error: " << error << "\n";
     std::cout << "\n";
-    
-    
-    
-    std::cout << "    GSL\n";
-    std::cout << "      Direct\n";
-    
-    gsl_fft_r2c gsl(n_x[0]);
 
+    // CUDA
+    std::cout << "      CUDA\n";
     sw.start();
     for(i=0; i<n_coils; ++i){
-      gsl.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
+      cuda_product(sig, coils[i], multiplied_signals[i]);
     }
     sw.stop();
     std::cout << "        Time:  " << sw.get() << " s\n";
-    
-     
-    std::cout << "      Inverse\n";
-    
-    gsl_fft_r2c gsli(n_x[0], true);
-    sw.start();
-    for(i=0; i<n_coils; ++i){
-      gsli.compute(inverse_transforms[i].pointer(), transforms[i].pointer());
-    }
-    sw.stop();
-    std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "\n";   
 
-    error=0;
-    for(i=0; i<n_coils; ++i){
-      error=error+(multiplied_signals[i]-inverse_transforms[i]).norm();
-    }
-    std::cout << "      Error: " << error << "\n";
-    std::cout << "\n";
-    
-    
-    
-    std::cout << "    MKL\n";
-    std::cout << "      Direct\n";
-    
-    mkl_fft_r2c mkl(n_dimensions, n_x);
-    
+    // CUDA (streams)
+    int n_streams=32;
+    std::cout << "      CUDA (" << n_streams << " streams)\n";
     sw.start();
     for(i=0; i<n_coils; ++i){
-      mkl.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
+      cuda_product(sig, coils[i], multiplied_signals[i], n_streams);
     }
     sw.stop();
     std::cout << "        Time:  " << sw.get() << " s\n";
-    
-    std::cout << "      Inverse\n";
-    mkl_fft_r2c mkli(n_dimensions, n_x);
+    std::cout << "\n";   
+
+   
+    std::cout << "    FFT\n";
+    // CUDA
+    std::cout << "      CUDA\n";
+    std::cout << "        Direct\n";
+
+    fft_cuda_r2c fc({n_x[0]});
     sw.start();
     for(i=0; i<n_coils; ++i){
-      mkli.compute(inverse_transforms[i].pointer(), transforms[i].pointer());
+      fc.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
     }
     sw.stop();
-    std::cout << "        Time:  " << sw.get() << " s\n";
-    
-    error=0;
-    for(i=0; i<n_coils; ++i){
-      error=error+(multiplied_signals[i]-inverse_transforms[i]).norm();
-    }
-    std::cout << "      Error: " << error << "\n";
-    std::cout << "\n";
+    std::cout << "          Time:  " << sw.get() << " s\n";    
+
+    std::cout << "        Inverse\n";
+
+    fft_cuda_r2c fci({n_x[0]}, true);
  
-    
-    std::cout << "    FFTPACK\n";
-    std::cout << "      Direct\n";
-    
-    fftpack_r2c fftpack(n_x[0]);
-    
     sw.start();
     for(i=0; i<n_coils; ++i){
-      fftpack.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
+      fci.compute(inverse_transforms[i].pointer(), transforms[i].pointer());
     }
     sw.stop();
-    std::cout << "        Time:  " << sw.get() << " s\n";
-    
-    std::cout << "      Inverse\n";
-    fftpack_r2c fftpacki(n_x[0]);
-    sw.start();
-    for(i=0; i<n_coils; ++i){
-      fftpacki.compute(inverse_transforms[i].pointer(), transforms[i].pointer());
-    }
-    sw.stop();
-    std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "          Time:  " << sw.get() << " s\n";
     
     error=0;
     for(i=0; i<n_coils; ++i){
       error=error+(multiplied_signals[i]-inverse_transforms[i]).norm();
     }
-    std::cout << "      Error: " << error << "\n";
+    std::cout << "        Error: " << error << "\n";
     std::cout << "\n";
-    */
+
+  
+ 
   }
-  
-  
-    // C <-> C
+
+  // C <-> C
   
   {
     // Dimensions
+    
     std::cout << "  C <-> C\n";
     std::cout << "\n";
     
@@ -235,144 +183,79 @@ int main(int argc, char** argv){
     std::vector<multiarray<::complex>> transforms;
     std::vector<multiarray<::complex>> inverse_transforms;
     for(i=0; i<n_coils; ++i){
-      multiplied_signals.push_back(sig*coils[i]); 
-      transforms.push_back(multiarray<::complex>({n_x[0]})); 
+      multiplied_signals.push_back(multiarray<::complex>({n_x[0]}));
+      transforms.push_back(multiarray<::complex>({n_x[0]}));
       inverse_transforms.push_back(multiarray<::complex>({n_x[0]}));
     }
-    
-    
+
+    std::cout << "    Multiplication\n";
+
+    // CPU
+    std::cout << "      CPU\n";
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      multiplied_signals[i]=sig*coils[i];
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "\n";
+ 
+    // CUDA
+    std::cout << "      CUDA\n";
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      cuda_product(sig, coils[i], multiplied_signals[i]);
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "\n";   
+
+    // CUDA (streams)
+    int n_streams=32;
+    std::cout << "      CUDA (" << n_streams << " streams)\n";
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      cuda_product(sig, coils[i], multiplied_signals[i], n_streams);
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "\n";   
 
 
+    // FFT
+    std::cout << "    FFT\n";
+    // CUDA
+    std::cout << "      CUDA\n";
+    std::cout << "        Direct\n";
+    
+    fft_cuda_c2c fc({n_x[0]});
+ 
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      fc.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
+    }
+    sw.stop();
+    std::cout << "          Time:  " << sw.get() << " s\n";    
 
-    /*
-    // FFTW
-    std::cout << "    FFTW\n";
-    std::cout << "      Direct\n";
-    
-    fftw_c2c fw(n_dimensions, n_x);
+    std::cout << "        Inverse\n";
+
+    fft_cuda_c2c fci({n_x[0]}, true);
+   
     sw.start();
     for(i=0; i<n_coils; ++i){
-      fw.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
+      fci.compute(inverse_transforms[i].pointer(), transforms[i].pointer());
     }
     sw.stop();
-    std::cout << "        Time:  " << sw.get() << " s\n";
-    
-    
-    std::cout << "      Inverse\n";
-    
-    fftw_c2c fwi(n_dimensions, n_x, true);
-    sw.start();
-    for(i=0; i<n_coils; ++i){
-      fwi.compute(inverse_transforms[i].pointer(), transforms[i].pointer());
-    }
-    sw.stop();
-    std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "          Time:  " << sw.get() << " s\n";
     
     error=0;
     for(i=0; i<n_coils; ++i){
       error=error+(multiplied_signals[i]-inverse_transforms[i]).norm();
     }
-    std::cout << "      Error: " << error << "\n";
-    std::cout << "\n"; 
+    std::cout << "        Error: " << error << "\n";
+    std::cout << "\n\n";
     
-    
-    // GSL
-    std::cout << "    GSL\n";
-    std::cout << "      Direct\n";
-    
-    
-    gsl_fft_c2c gsl(n_x[0]);
-    sw.start();
-    for(i=0; i<n_coils; ++i){
-      fw.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
-    }
-    sw.stop();
-    std::cout << "        Time:  " << sw.get() << " s\n";
-    
-    
-    std::cout << "      Inverse\n";
-    
-    gsl_fft_c2c gsli(n_x[0], true);
-    sw.start();
-    for(i=0; i<n_coils; ++i){
-      gsli.compute(inverse_transforms[i].pointer(), transforms[i].pointer());
-    }
-    sw.stop();
-    std::cout << "        Time:  " << sw.get() << " s\n";
-    
-    error=0;
-    for(i=0; i<n_coils; ++i){
-      error=error+(multiplied_signals[i]-inverse_transforms[i]).norm();
-    }
-    std::cout << "      Error: " << error << "\n";
-    std::cout << "\n"; 
-    
-    
-    // MKL
-    std::cout << "    MKL\n";
-    std::cout << "      Direct\n";
-    
-    
-    mkl_fft_c2c mkl(n_dimensions, n_x);
-    sw.start();
-    for(i=0; i<n_coils; ++i){
-      fw.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
-    }
-    sw.stop();
-    std::cout << "        Time:  " << sw.get() << " s\n";
-    
-    
-    std::cout << "      Inverse\n";
-    
-    mkl_fft_c2c mkli(n_dimensions, n_x, true);
-    sw.start();
-    for(i=0; i<n_coils; ++i){
-      gsli.compute(inverse_transforms[i].pointer(), transforms[i].pointer());
-    }
-    sw.stop();
-    std::cout << "        Time:  " << sw.get() << " s\n";
-    
-    error=0;
-    for(i=0; i<n_coils; ++i){
-      error=error+(multiplied_signals[i]-inverse_transforms[i]).norm();
-    }
-    std::cout << "      Error: " << error << "\n";
-    std::cout << "\n";    
-    
-    
-    // FFTPACK
-    std::cout << "    FFTPACK\n";
-    std::cout << "      Direct\n";
-    
-    fftpack_c2c fftpack(n_x[0]);
-    sw.start();
-    for(i=0; i<n_coils; ++i){
-      fw.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
-    }
-    sw.stop();
-    std::cout << "        Time:  " << sw.get() << " s\n";
-    
-    
-    std::cout << "      Inverse\n";
-    
-    fftpack_c2c fftpacki(n_x[0], true);
-    sw.start();
-    for(i=0; i<n_coils; ++i){
-      gsli.compute(inverse_transforms[i].pointer(), transforms[i].pointer());
-    }
-    sw.stop();
-    std::cout << "        Time:  " << sw.get() << " s\n";
-    
-    error=0;
-    for(i=0; i<n_coils; ++i){
-      error=error+(multiplied_signals[i]-inverse_transforms[i]).norm();
-    }
-    std::cout << "      Error: " << error << "\n";
-    std::cout << "\n";    
-    std::cout << "\n"; 
-    */    
   }
-  
   
   
   // 2D
@@ -425,76 +308,40 @@ int main(int argc, char** argv){
     std::vector<multiarray<double>> inverse_transforms;
     for(i=0; i<n_coils; ++i){
       multiplied_signals.push_back(sig*coils[i]); 
-      transforms.push_back(multiarray<::complex>({n_x[0], n_x[1]/2+1}));
+      transforms.push_back(multiarray<::complex>({n_x[0], n_x[1]/*/2+1*/}));
       inverse_transforms.push_back(multiarray<double>({n_x[0], n_x[1]}));
     }
-    
-    
+   
+    std::cout << "    FFT\n";
+    // CUDA
+    std::cout << "      CUDA\n";
+    std::cout << "        Direct\n";
 
-
-
-    /*
-
-    // FFTW
-    std::cout << "    FFTW\n";
-    std::cout << "      Direct\n";
-    
-    fftw_r2c fw(n_dimensions, n_x);
+    fft_cuda_r2c fc({n_x[0], n_x[1]});
     sw.start();
     for(i=0; i<n_coils; ++i){
-      fw.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
+      fc.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
     }
     sw.stop();
-    std::cout << "        Time:  " << sw.get() << " s\n";
-    
-    
-    std::cout << "      Inverse\n";
-    
-    fftw_r2c fwi(n_dimensions, n_x, true);
+    std::cout << "          Time:  " << sw.get() << " s\n";    
+
+    std::cout << "        Inverse\n";
+
+    fft_cuda_r2c fci({n_x[0], n_x[1]}, true);
     sw.start();
     for(i=0; i<n_coils; ++i){
-      fwi.compute(inverse_transforms[i].pointer(), transforms[i].pointer());
+      fci.compute(inverse_transforms[i].pointer(), transforms[i].pointer());
     }
     sw.stop();
-    std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "          Time:  " << sw.get() << " s\n";
     
     error=0;
     for(i=0; i<n_coils; ++i){
       error=error+(multiplied_signals[i]-inverse_transforms[i]).norm();
     }
-    std::cout << "      Error: " << error << "\n";
+    std::cout << "        Error: " << error << "\n";
     std::cout << "\n";
     
-    
-    // MKL
-    std::cout << "    MKL\n";
-    std::cout << "      Direct\n";
-    
-    mkl_fft_r2c mkl(n_dimensions, n_x);
-    
-    sw.start();
-    for(i=0; i<n_coils; ++i){
-      mkl.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
-    }
-    sw.stop();
-    std::cout << "        Time:  " << sw.get() << " s\n";
-    
-    std::cout << "      Inverse\n";
-    mkl_fft_r2c mkli(n_dimensions, n_x);
-    sw.start();
-    for(i=0; i<n_coils; ++i){
-      mkli.compute(inverse_transforms[i].pointer(), transforms[i].pointer());
-    }
-    sw.stop();
-    std::cout << "        Time:  " << sw.get() << " s\n";
-    
-    error=0;
-    for(i=0; i<n_coils; ++i){
-      error=error+(multiplied_signals[i]-inverse_transforms[i]).norm();
-    }
-    std::cout << "      Error: " << error << "\n";
-    std::cout << "\n";
-*/    
   }  
   
   
@@ -537,67 +384,36 @@ int main(int argc, char** argv){
       inverse_transforms.push_back(multiarray<::complex>({n_x[0], n_x[1]}));
     }
     
-    /*
-    // FFTW
-    std::cout << "    FFTW\n";
-    std::cout << "      Direct\n";
-    
-    fftw_c2c fw(n_dimensions, n_x);
+    std::cout << "    FFT\n";
+    // CUDA
+    std::cout << "      CUDA\n";
+    std::cout << "        Direct\n";
+
+    fft_cuda_c2c fc({n_x[0], n_x[1]});
     sw.start();
     for(i=0; i<n_coils; ++i){
-      fw.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
+      fc.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
     }
     sw.stop();
-    std::cout << "        Time:  " << sw.get() << " s\n";
-    
-    
-    std::cout << "      Inverse\n";
-    
-    fftw_c2c fwi(n_dimensions, n_x, true);
+    std::cout << "          Time:  " << sw.get() << " s\n";    
+
+    std::cout << "        Inverse\n";
+
+    fft_cuda_c2c fci({n_x[0], n_x[1]}, true);
     sw.start();
     for(i=0; i<n_coils; ++i){
-      fwi.compute(inverse_transforms[i].pointer(), transforms[i].pointer());
+      fci.compute(inverse_transforms[i].pointer(), transforms[i].pointer());
     }
     sw.stop();
-    std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "          Time:  " << sw.get() << " s\n";
     
     error=0;
     for(i=0; i<n_coils; ++i){
       error=error+(multiplied_signals[i]-inverse_transforms[i]).norm();
     }
-    std::cout << "      Error: " << error << "\n";
-    std::cout << "\n";
-    
-    
-    // MKL
-    std::cout << "    MKL\n";
-    std::cout << "      Direct\n";
-    
-    mkl_fft_c2c mkl(n_dimensions, n_x);
-    
-    sw.start();
-    for(i=0; i<n_coils; ++i){
-      mkl.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
-    }
-    sw.stop();
-    std::cout << "        Time:  " << sw.get() << " s\n";
-    
-    std::cout << "      Inverse\n";
-    mkl_fft_c2c mkli(n_dimensions, n_x);
-    sw.start();
-    for(i=0; i<n_coils; ++i){
-      mkli.compute(inverse_transforms[i].pointer(), transforms[i].pointer());
-    }
-    sw.stop();
-    std::cout << "        Time:  " << sw.get() << " s\n";
-    
-    error=0;
-    for(i=0; i<n_coils; ++i){
-      error=error+(multiplied_signals[i]-inverse_transforms[i]).norm();
-    }
-    std::cout << "      Error: " << error << "\n";
-    std::cout << "\n";
-    */
+    std::cout << "        Error: " << error << "\n";
+    std::cout << "\n\n";
+
   }  
   
   
@@ -662,67 +478,35 @@ int main(int argc, char** argv){
       inverse_transforms.push_back(multiarray<double>({n_x[0], n_x[1], n_x[2]}));
     }
     
-    /*
-    // FFTW
-    std::cout << "    FFTW\n";
-    std::cout << "      Direct\n";
-    
-    fftw_r2c fw(n_dimensions, n_x);
+     std::cout << "    FFT\n";
+    // CUDA
+    std::cout << "      CUDA\n";
+    std::cout << "        Direct\n";
+
+    fft_cuda_r2c fc({n_x[0], n_x[1], n_x[2]});
     sw.start();
     for(i=0; i<n_coils; ++i){
-      fw.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
+      fc.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
     }
     sw.stop();
-    std::cout << "        Time:  " << sw.get() << " s\n";
-    
-    
-    std::cout << "      Inverse\n";
-    
-    fftw_r2c fwi(n_dimensions, n_x, true);
+    std::cout << "          Time:  " << sw.get() << " s\n";    
+
+    std::cout << "        Inverse\n";
+
+    fft_cuda_r2c fci({n_x[0], n_x[1], n_x[2]}, true);
     sw.start();
     for(i=0; i<n_coils; ++i){
-      fwi.compute(inverse_transforms[i].pointer(), transforms[i].pointer());
+      fci.compute(inverse_transforms[i].pointer(), transforms[i].pointer());
     }
     sw.stop();
-    std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "          Time:  " << sw.get() << " s\n";
     
     error=0;
     for(i=0; i<n_coils; ++i){
       error=error+(multiplied_signals[i]-inverse_transforms[i]).norm();
     }
-    std::cout << "      Error: " << error << "\n";
+    std::cout << "        Error: " << error << "\n";
     std::cout << "\n";
-    
-    
-    // MKL
-    std::cout << "    MKL\n";
-    std::cout << "      Direct\n";
-    
-    mkl_fft_r2c mkl(n_dimensions, n_x);
-    
-    sw.start();
-    for(i=0; i<n_coils; ++i){
-      mkl.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
-    }
-    sw.stop();
-    std::cout << "        Time:  " << sw.get() << " s\n";
-    
-    std::cout << "      Inverse\n";
-    mkl_fft_r2c mkli(n_dimensions, n_x);
-    sw.start();
-    for(i=0; i<n_coils; ++i){
-      mkli.compute(inverse_transforms[i].pointer(), transforms[i].pointer());
-    }
-    sw.stop();
-    std::cout << "        Time:  " << sw.get() << " s\n";
-    
-    error=0;
-    for(i=0; i<n_coils; ++i){
-      error=error+(multiplied_signals[i]-inverse_transforms[i]).norm();
-    }
-    std::cout << "      Error: " << error << "\n";
-    std::cout << "\n";
-    */
   }  
   
   
@@ -769,68 +553,37 @@ int main(int argc, char** argv){
       transforms.push_back(multiarray<::complex>({n_x[0], n_x[1], n_x[2]}));
       inverse_transforms.push_back(multiarray<::complex>({n_x[0], n_x[1], n_x[2]}));
     }
-    
-    /*
-    // FFTW
-    std::cout << "    FFTW\n";
-    std::cout << "      Direct\n";
-    
-    fftw_c2c fw(n_dimensions, n_x);
+
+        std::cout << "    FFT\n";
+    // CUDA
+    std::cout << "      CUDA\n";
+    std::cout << "        Direct\n";
+
+    fft_cuda_c2c fc({n_x[0], n_x[1], n_x[2]});
     sw.start();
     for(i=0; i<n_coils; ++i){
-      fw.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
+      fc.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
     }
     sw.stop();
-    std::cout << "        Time:  " << sw.get() << " s\n";
-    
-    
-    std::cout << "      Inverse\n";
-    
-    fftw_c2c fwi(n_dimensions, n_x, true);
+    std::cout << "          Time:  " << sw.get() << " s\n";    
+
+    std::cout << "        Inverse\n";
+
+    fft_cuda_c2c fci({n_x[0], n_x[1], n_x[2]}, true);
     sw.start();
     for(i=0; i<n_coils; ++i){
-      fwi.compute(inverse_transforms[i].pointer(), transforms[i].pointer());
+      fci.compute(inverse_transforms[i].pointer(), transforms[i].pointer());
     }
     sw.stop();
-    std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "          Time:  " << sw.get() << " s\n";
     
     error=0;
     for(i=0; i<n_coils; ++i){
       error=error+(multiplied_signals[i]-inverse_transforms[i]).norm();
     }
-    std::cout << "      Error: " << error << "\n";
-    std::cout << "\n";
-    
-    
-    // MKL
-    std::cout << "    MKL\n";
-    std::cout << "      Direct\n";
-    
-    mkl_fft_c2c mkl(n_dimensions, n_x);
-    
-    sw.start();
-    for(i=0; i<n_coils; ++i){
-      mkl.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
-    }
-    sw.stop();
-    std::cout << "        Time:  " << sw.get() << " s\n";
-    
-    std::cout << "      Inverse\n";
-    mkl_fft_c2c mkli(n_dimensions, n_x);
-    sw.start();
-    for(i=0; i<n_coils; ++i){
-      mkli.compute(inverse_transforms[i].pointer(), transforms[i].pointer());
-    }
-    sw.stop();
-    std::cout << "        Time:  " << sw.get() << " s\n";
-    
-    error=0;
-    for(i=0; i<n_coils; ++i){
-      error=error+(multiplied_signals[i]-inverse_transforms[i]).norm();
-    }
-    std::cout << "      Error: " << error << "\n";
-    std::cout << "\n";
-    */
+    std::cout << "        Error: " << error << "\n";
+    std::cout << "\n\n";
+
   }  
    
    
