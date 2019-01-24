@@ -9,6 +9,8 @@
 #include "cudaproduct.cuh"
 #include "fftcuda.hpp"
 #include <omp.h>
+#include "openmpproduct.hpp"
+
 using namespace std;
 
 
@@ -90,6 +92,16 @@ int main(int argc, char** argv){
     sw.start();
     for(i=0; i<n_coils; ++i){
       multiplied_signals[i]=sig*coils[i];
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "\n";
+
+    // OpenMP
+    std::cout << "      OpenMP\n";
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      openmp_product(sig, coils[i], multiplied_signals[i]);
     }
     sw.stop();
     std::cout << "        Time:  " << sw.get() << " s\n";
@@ -200,6 +212,16 @@ int main(int argc, char** argv){
     std::cout << "        Time:  " << sw.get() << " s\n";
     std::cout << "\n";
  
+    // OpenMP
+    std::cout << "      OpenMP\n";
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      openmp_product(sig, coils[i], multiplied_signals[i]);
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "\n";
+
     // CUDA
     std::cout << "      CUDA\n";
     sw.start();
