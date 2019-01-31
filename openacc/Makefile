@@ -1,4 +1,4 @@
-CXX=g++
+CXX=mpic++
 
 FLAGS=-std=c++11 -O3 -fopenacc -lboost_system -lboost_chrono 
 

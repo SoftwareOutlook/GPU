@@ -1,4 +1,5 @@
 module load gcc/8.1.0
+module load mpi/openmpi-x86_64
 module load GPUmodules
 module load cuda/9.0.176
 module load libBoost/1.66.0-gcc-4.8.5
