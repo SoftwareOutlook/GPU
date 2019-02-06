@@ -1,10 +1,12 @@
-#include "complex.hpp"
-#include "signal.hpp"
+#include <complex.hpp>
+#include <signal.hpp>
 #include <iostream>
-#include "stopwatch.hpp"
-#include "multiarray.hpp"
+#include <stopwatch.hpp>
+#include <multiarray.hpp>
 #include <vector>
 #include "openaccproduct.hpp"
+#include "fftopenacc.hpp"
+#include <mpi.h>
 
 using namespace std;
 
@@ -17,6 +19,7 @@ int main(int argc, char** argv){
     return -1;
   }
 
+  MPI_Init(&argc, &argv);
   
   int i, j, k[3], n_x[3], dim[3], n_dimensions, n_coils;
   double a=0.25;
@@ -103,70 +106,38 @@ int main(int argc, char** argv){
     std::cout << "\n";
  
 
-/*
-// OpenMP
-std::cout << "      OpenMP\n";
-sw.start();
-for(i=0; i<n_coils; ++i){
-openmp_product(sig, coils[i], multiplied_signals[i]);
-}
-sw.stop();
-std::cout << "        Time:  " << sw.get() << " s\n";
-std::cout << "\n";
-
-// CUDA
-std::cout << "      CUDA\n";
-sw.start();
-for(i=0; i<n_coils; ++i){
-cuda_product(sig, coils[i], multiplied_signals[i]);
-}
-sw.stop();
-std::cout << "        Time:  " << sw.get() << " s\n";
-std::cout << "\n";   
-
-// CUDA (streams)
-int n_streams=32;
-std::cout << "      CUDA (" << n_streams << " streams)\n";
-sw.start();
-for(i=0; i<n_coils; ++i){
-cuda_product(sig, coils[i], multiplied_signals[i], n_streams);
-}
-sw.stop();
-std::cout << "        Time:  " << sw.get() << " s\n";
-std::cout << "\n";   
-
-   
-std::cout << "    FFT\n";
-// CUDA
-std::cout << "      CUDA\n";
-std::cout << "        Direct\n";
-
-fft_cuda_r2c fc({n_x[0]});
-sw.start();
-for(i=0; i<n_coils; ++i){
-fc.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
-}
-sw.stop();
-std::cout << "          Time:  " << sw.get() << " s\n";    
-
-std::cout << "        Inverse\n";
-
-fft_cuda_r2c fci({n_x[0]}, true);
- 
-sw.start();
-for(i=0; i<n_coils; ++i){
-fci.compute(inverse_transforms[i].pointer(), transforms[i].pointer());
-}
-sw.stop();
-std::cout << "          Time:  " << sw.get() << " s\n";
     
-error=0;
-for(i=0; i<n_coils; ++i){
-error=error+(multiplied_signals[i]-inverse_transforms[i]).norm();
-}
-std::cout << "        Error: " << error << "\n";
-std::cout << "\n";
-*/
+    // FFT 
+    std::cout << "    FFT\n";
+    // OpenACC
+    std::cout << "      OpenACC\n";
+    std::cout << "        Direct\n";
+
+    fft_openacc_r2c fc({n_x[0]});
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      fc.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
+    }
+    sw.stop();
+    std::cout << "          Time:  " << sw.get() << " s\n";    
+   
+    std::cout << "        Inverse\n";
+
+    fft_openacc_r2c fci({n_x[0]}, true);
+ 
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      fci.compute(inverse_transforms[i].pointer(), transforms[i].pointer());
+    }
+    sw.stop();
+    std::cout << "          Time:  " << sw.get() << " s\n";
+    
+    error=0;
+    for(i=0; i<n_coils; ++i){
+      error=error+(multiplied_signals[i]-inverse_transforms[i]).norm();
+    }
+    std::cout << "        Error: " << error << "\n";
+    std::cout << "\n";
  
   }
 
@@ -227,72 +198,41 @@ std::cout << "\n";
     sw.stop();
     std::cout << "        Time:  " << sw.get() << " s\n";
     std::cout << "\n";
-/*
-// OpenMP
-std::cout << "      OpenMP\n";
-sw.start();
-for(i=0; i<n_coils; ++i){
-openmp_product(sig, coils[i], multiplied_signals[i]);
-}
-sw.stop();
-std::cout << "        Time:  " << sw.get() << " s\n";
-std::cout << "\n";
-
-// CUDA
-std::cout << "      CUDA\n";
-sw.start();
-for(i=0; i<n_coils; ++i){
-cuda_product(sig, coils[i], multiplied_signals[i]);
-}
-sw.stop();
-std::cout << "        Time:  " << sw.get() << " s\n";
-std::cout << "\n";   
-
-// CUDA (streams)
-int n_streams=32;
-std::cout << "      CUDA (" << n_streams << " streams)\n";
-sw.start();
-for(i=0; i<n_coils; ++i){
-cuda_product(sig, coils[i], multiplied_signals[i], n_streams);
-}
-sw.stop();
-std::cout << "        Time:  " << sw.get() << " s\n";
-std::cout << "\n";   
-
-
-// FFT
-std::cout << "    FFT\n";
-// CUDA
-std::cout << "      CUDA\n";
-std::cout << "        Direct\n";
     
-fft_cuda_c2c fc({n_x[0]});
+
+    // FFT
+    std::cout << "    FFT\n";
+    // OpenACC
+    std::cout << "      OpenACC\n";
+    std::cout << "        Direct\n";
+    
+    fft_openacc_c2c fc({n_x[0]});
  
-sw.start();
-for(i=0; i<n_coils; ++i){
-fc.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
-}
-sw.stop();
-std::cout << "          Time:  " << sw.get() << " s\n";    
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      fc.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
+    }
+    sw.stop();
+    std::cout << "          Time:  " << sw.get() << " s\n";    
 
-std::cout << "        Inverse\n";
-
-fft_cuda_c2c fci({n_x[0]}, true);
-   
-sw.start();
-for(i=0; i<n_coils; ++i){
-fci.compute(inverse_transforms[i].pointer(), transforms[i].pointer());
-}
-sw.stop();
-std::cout << "          Time:  " << sw.get() << " s\n";
     
-error=0;
-for(i=0; i<n_coils; ++i){
-error=error+(multiplied_signals[i]-inverse_transforms[i]).norm();
-}
-std::cout << "        Error: " << error << "\n";
-std::cout << "\n\n";
-*/  
+    std::cout << "        Inverse\n";
+
+    fft_openacc_c2c fci({n_x[0]}, true);
+   
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      fci.compute(inverse_transforms[i].pointer(), transforms[i].pointer());
+    }
+    sw.stop();
+    std::cout << "          Time:  " << sw.get() << " s\n";
+    
+    error=0;
+    for(i=0; i<n_coils; ++i){
+      error=error+(multiplied_signals[i]-inverse_transforms[i]).norm();
+    }
+    std::cout << "        Error: " << error << "\n";
+    std::cout << "\n\n";
   }
   
   
@@ -346,42 +286,42 @@ std::cout << "\n\n";
     std::vector<multiarray<double>> inverse_transforms;
     for(i=0; i<n_coils; ++i){
       multiplied_signals.push_back(sig*coils[i]); 
-      transforms.push_back(multiarray<::complex>({n_x[0], n_x[1]/*/2+1*/}));
+      transforms.push_back(multiarray<::complex>({n_x[0], n_x[1]/2+1}));
       inverse_transforms.push_back(multiarray<double>({n_x[0], n_x[1]}));
     }
 
-/* 
-   std::cout << "    FFT\n";
-   // CUDA
-   std::cout << "      CUDA\n";
-   std::cout << "        Direct\n";
+ 
+    std::cout << "    FFT\n";
+    // OpenACC
+    std::cout << "      OpenACC\n";
+    std::cout << "        Direct\n";
 
-   fft_cuda_r2c fc({n_x[0], n_x[1]});
-   sw.start();
-   for(i=0; i<n_coils; ++i){
-   fc.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
-   }
-   sw.stop();
-   std::cout << "          Time:  " << sw.get() << " s\n";    
+    fft_openacc_r2c fc({n_x[0], n_x[1]});
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      fc.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
+    }
+    sw.stop();
+    std::cout << "          Time:  " << sw.get() << " s\n";    
 
-   std::cout << "        Inverse\n";
+    std::cout << "        Inverse\n";
 
-   fft_cuda_r2c fci({n_x[0], n_x[1]}, true);
-   sw.start();
-   for(i=0; i<n_coils; ++i){
-   fci.compute(inverse_transforms[i].pointer(), transforms[i].pointer());
-   }
-   sw.stop();
-   std::cout << "          Time:  " << sw.get() << " s\n";
+    fft_openacc_r2c fci({n_x[0], n_x[1]}, true);
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      fci.compute(inverse_transforms[i].pointer(), transforms[i].pointer());
+    }
+    sw.stop();
+    std::cout << "          Time:  " << sw.get() << " s\n";
     
-   error=0;
-   for(i=0; i<n_coils; ++i){
-   error=error+(multiplied_signals[i]-inverse_transforms[i]).norm();
-   }
-   std::cout << "        Error: " << error << "\n";
-   std::cout << "\n";
-*/  
-  }  
+    error=0;
+    for(i=0; i<n_coils; ++i){
+      error=error+(multiplied_signals[i]-inverse_transforms[i]).norm();
+    }
+    std::cout << "        Error: " << error << "\n";
+    std::cout << "\n";
+  
+ }  
   
   
   // C <-> C
@@ -422,13 +362,13 @@ std::cout << "\n\n";
       transforms.push_back(multiarray<::complex>({n_x[0], n_x[1]}));
       inverse_transforms.push_back(multiarray<::complex>({n_x[0], n_x[1]}));
     }
-/*  
+  
     std::cout << "    FFT\n";
-    // CUDA
-    std::cout << "      CUDA\n";
+    // OpenACC
+    std::cout << "      OpenACC\n";
     std::cout << "        Direct\n";
 
-    fft_cuda_c2c fc({n_x[0], n_x[1]});
+    fft_openacc_c2c fc({n_x[0], n_x[1]});
     sw.start();
     for(i=0; i<n_coils; ++i){
     fc.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
@@ -438,7 +378,7 @@ std::cout << "\n\n";
 
     std::cout << "        Inverse\n";
 
-    fft_cuda_c2c fci({n_x[0], n_x[1]}, true);
+    fft_openacc_c2c fci({n_x[0], n_x[1]}, true);
     sw.start();
     for(i=0; i<n_coils; ++i){
     fci.compute(inverse_transforms[i].pointer(), transforms[i].pointer());
@@ -452,7 +392,7 @@ std::cout << "\n\n";
     }
     std::cout << "        Error: " << error << "\n";
     std::cout << "\n\n";
-*/
+
   }  
   
   
@@ -516,13 +456,13 @@ std::cout << "\n\n";
       transforms.push_back(multiarray<::complex>({n_x[0], n_x[1], n_x[2]/2+1}));
       inverse_transforms.push_back(multiarray<double>({n_x[0], n_x[1], n_x[2]}));
     }
-/*  
+  
     std::cout << "    FFT\n";
-    // CUDA
-    std::cout << "      CUDA\n";
+    // OpenACC
+    std::cout << "      OpenACC\n";
     std::cout << "        Direct\n";
 
-    fft_cuda_r2c fc({n_x[0], n_x[1], n_x[2]});
+    fft_openacc_r2c fc({n_x[0], n_x[1], n_x[2]});
     sw.start();
     for(i=0; i<n_coils; ++i){
     fc.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
@@ -532,21 +472,21 @@ std::cout << "\n\n";
 
     std::cout << "        Inverse\n";
 
-    fft_cuda_r2c fci({n_x[0], n_x[1], n_x[2]}, true);
+    fft_openacc_r2c fci({n_x[0], n_x[1], n_x[2]}, true);
     sw.start();
     for(i=0; i<n_coils; ++i){
-    fci.compute(inverse_transforms[i].pointer(), transforms[i].pointer());
+      fci.compute(inverse_transforms[i].pointer(), transforms[i].pointer());
     }
     sw.stop();
     std::cout << "          Time:  " << sw.get() << " s\n";
     
     error=0;
     for(i=0; i<n_coils; ++i){
-    error=error+(multiplied_signals[i]-inverse_transforms[i]).norm();
+      error=error+(multiplied_signals[i]-inverse_transforms[i]).norm();
     }
     std::cout << "        Error: " << error << "\n";
     std::cout << "\n";
-*/
+
   }  
   
   
@@ -593,13 +533,13 @@ std::cout << "\n\n";
       transforms.push_back(multiarray<::complex>({n_x[0], n_x[1], n_x[2]}));
       inverse_transforms.push_back(multiarray<::complex>({n_x[0], n_x[1], n_x[2]}));
     }
-/*
+
   std::cout << "    FFT\n";
-  // CUDA
-  std::cout << "      CUDA\n";
+  // OpenACC
+  std::cout << "      OpenACC\n";
   std::cout << "        Direct\n";
 
-  fft_cuda_c2c fc({n_x[0], n_x[1], n_x[2]});
+  fft_openacc_c2c fc({n_x[0], n_x[1], n_x[2]});
   sw.start();
   for(i=0; i<n_coils; ++i){
   fc.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
@@ -609,7 +549,7 @@ std::cout << "\n\n";
 
   std::cout << "        Inverse\n";
 
-  fft_cuda_c2c fci({n_x[0], n_x[1], n_x[2]}, true);
+  fft_openacc_c2c fci({n_x[0], n_x[1], n_x[2]}, true);
   sw.start();
   for(i=0; i<n_coils; ++i){
   fci.compute(inverse_transforms[i].pointer(), transforms[i].pointer());
@@ -623,12 +563,11 @@ std::cout << "\n\n";
   }
   std::cout << "        Error: " << error << "\n";
   std::cout << "\n\n";
-*/
+
   }  
    
-   
-  //fftw_cleanup_threads();
+  MPI_Finalize(); 
   
-return 0;
+  return 0;
 
 }

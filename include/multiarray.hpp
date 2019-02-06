@@ -145,7 +145,7 @@ public:
   double norm() const{
     double N=0;
     for(size_t i=0; i<size(); ++i){
-      N=N+abs(t[i]);   
+      N=N+::norm(t[i]);   
     }
     return N;
   }

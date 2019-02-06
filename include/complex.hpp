@@ -44,7 +44,7 @@ public:
 
 };
 
-inline double abs(const double& a){
+inline double norm(const double& a){
   if(a>=0){
     return a;   
   }else{
@@ -52,7 +52,7 @@ inline double abs(const double& a){
   }
 }
 
-inline double abs(const complex& z){
+inline double norm(const complex& z){
   return sqrt(pow(z.real(), 2)+pow(z.imag(), 2));   
 }
 
