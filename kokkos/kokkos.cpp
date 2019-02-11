@@ -6,7 +6,7 @@ void kokkos_loop(const int n, double* z_re, double* z_im, double* a_val, double*
 
   int argc=0;
   Kokkos::initialize(argc, nullptr);
-  
+  //std::cout << (Kokkos::DefaultExecutionSpace).name() << "\n";
   parallel_for("product", n, KOKKOS_LAMBDA(const int& i){ 
   az_re[i]=a_val[i]*z_re[i];
   az_im[i]=a_val[i]*z_im[i];
@@ -24,8 +24,7 @@ void kokkos_loop(const int n, double* x, double* a, double* ax){
   parallel_for("product", n, KOKKOS_LAMBDA(const int& i){ 
   ax[i]=a[i]*x[i];
   });
-
-  Kokkos::finalize();
+Kokkos::finalize();
 }
 
 int kokkos_product(const multiarray<::complex>& z, const multiarray<double>& a, multiarray<::complex>& az){
@@ -37,7 +36,7 @@ int kokkos_product(const multiarray<::complex>& z, const multiarray<double>& a, 
   double* az_re=new double[n];
   double* az_im=new double[n];
   
-  kokkos_loop(n, z_re, z_im, a_val, az_re, az_im);
+ // kokkos_loop(n, z_re, z_im, a_val, az_re, az_im);
   
   delete[] z_re;
   delete[] z_im;
