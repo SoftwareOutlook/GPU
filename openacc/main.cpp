@@ -124,6 +124,7 @@ int main(int argc, char** argv){
     std::cout << "        Inverse\n";
 
     fft_openacc_r2c fci({n_x[0]}, true);
+
  
     sw.start();
     for(i=0; i<n_coils; ++i){
@@ -464,9 +465,11 @@ int main(int argc, char** argv){
 
     fft_openacc_r2c fc({n_x[0], n_x[1], n_x[2]});
     sw.start();
+ 
     for(i=0; i<n_coils; ++i){
     fc.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
     }
+ 
     sw.stop();
     std::cout << "          Time:  " << sw.get() << " s\n";    
 
@@ -477,6 +480,7 @@ int main(int argc, char** argv){
     for(i=0; i<n_coils; ++i){
       fci.compute(inverse_transforms[i].pointer(), transforms[i].pointer());
     }
+
     sw.stop();
     std::cout << "          Time:  " << sw.get() << " s\n";
     
@@ -542,7 +546,7 @@ int main(int argc, char** argv){
   fft_openacc_c2c fc({n_x[0], n_x[1], n_x[2]});
   sw.start();
   for(i=0; i<n_coils; ++i){
-  fc.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
+    fc.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
   }
   sw.stop();
   std::cout << "          Time:  " << sw.get() << " s\n";    

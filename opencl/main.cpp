@@ -1,8 +1,8 @@
-#include "complex.hpp"
-#include "signal.hpp"
+#include <complex.hpp>
+#include <signal.hpp>
 #include <iostream>
-#include "stopwatch.hpp"
-#include "multiarray.hpp"
+#include <stopwatch.hpp>
+#include <multiarray.hpp>
 #include <vector>
 #include "openclproduct.hpp"
 #include <omp.h>
