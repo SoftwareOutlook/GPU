@@ -116,7 +116,7 @@ int fft_openacc_r2c::compute(double* in, complex* out){
       transform[i][0]=out[i].real();
       transform[i][1]=out[i].imag();
     }
-	cudaMemcpy(d_transform, transform, size_complex() * sizeof(Complex), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_transform, transform, size_complex() * sizeof(Complex), cudaMemcpyHostToDevice);
     accfft_execute_c2r_gpu(plan, d_transform, d_signal);
     cudaMemcpy(signal, d_signal, size() * sizeof(double), cudaMemcpyDeviceToHost);
     for(i=0; i<size(); ++i){

@@ -1,19 +1,49 @@
-CXX=g++
+KOKKOS_PATH = ${HOME}/Kokkos/kokkos
+KOKKOS_DEVICES = "OpenMP"
+EXE_NAME = "test"
 
-CFLAGS=-std=c++11 -O3 -lboost_system -lboost_chrono -I${HOME}/GPU/include -I${HOME}/opt/include
-LFLAGS=-lboost_system -lboost_chrono -fopenmp -L${HOME}/opt/lib -lkokkos -ldl
+SRC = $(wildcard *.cpp)
+
+default: build
+	echo "Start Build"
 
 
-all: test
+ifneq (,$(findstring Cuda,$(KOKKOS_DEVICES)))
+CXX = ${KOKKOS_PATH}/bin/nvcc_wrapper
+EXE = ${EXE_NAME}.cuda
+KOKKOS_ARCH = "BDW,Volta70"
+KOKKOS_CUDA_OPTIONS = "enable_lambda"
+else
+CXX = g++
+EXE = ${EXE_NAME}
+KOKKOS_ARCH = "BDW"
+endif
 
-test: kokkos.o main.o 
-	${CXX} kokkos.o main.o -o test ${LFLAGS} 
+CXXFLAGS = -O3
+LINK = ${CXX}
+LINKFLAGS =
 
-main.o: main.cpp 
-	${CXX} -c main.cpp ${CFLAGS}
+DEPFLAGS = -M
 
-kokkos.o: kokkos.hpp kokkos.cpp
-	${CXX} -c kokkos.cpp ${CFLAGS}
+OBJ = $(SRC:.cpp=.o)
+LIB =
 
-clean:
-	rm *.o test
+include $(KOKKOS_PATH)/Makefile.kokkos
+
+build: $(EXE)
+
+$(EXE): $(OBJ) $(KOKKOS_LINK_DEPENDS)
+	$(LINK) $(KOKKOS_LDFLAGS) $(LINKFLAGS) $(EXTRA_PATH) $(OBJ) $(KOKKOS_LIBS) $(LIB) -L${HOME}/opt/lib -lboost_system -lboost_chrono -o $(EXE)
+
+clean: kokkos-clean
+	rm -f *.o *.cuda *.host
+
+# Compilation rules
+
+
+
+%.o:%.cpp $(KOKKOS_CPP_DEPENDS)
+	$(CXX) $(KOKKOS_CPPFLAGS) $(KOKKOS_CXXFLAGS) $(CXXFLAGS) $(EXTRA_INC) -I${HOME}/GPU/include -I${HOME}/opt/include -c $<
+
+test: $(EXE)
+	./$(EXE)

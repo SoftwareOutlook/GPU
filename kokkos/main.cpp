@@ -6,6 +6,7 @@
 #include <vector>
 #include <omp.h>
 #include "kokkos.hpp"
+#include <Kokkos_Core.hpp>
 using namespace std;
 
 
@@ -16,7 +17,9 @@ int main(int argc, char** argv){
     std::cout << "Please supply a dimension and a number of coils\n";
     return -1;
   }
- // Kokkos::initialize(argc, nullptr);
+  
+  Kokkos::initialize(argc, argv);
+  
   int i, j, k[3], n_x[3], dim, n_dimensions, n_coils;
   double a=0.25;
   double b=a/2;
@@ -160,8 +163,9 @@ int main(int argc, char** argv){
 
   }
   
-  //Kokkos::finalize();
+  Kokkos::finalize();
   
   return 0;
 
 }
+ 
