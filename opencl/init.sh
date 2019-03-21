@@ -1,8 +1,12 @@
-module load h5utils/1.13.1-intel-17.0.2
-module load OpenMPI/4.0.0-GCC-8.2.0-2.31.1
-module load GPUmodules
-module load cuda/9.0.176
-module load libBoost/1.66.0-gcc-4.8.5
+export C_INCLUDE_PATH=${HOME}/GPU/include:/apps/packages/cuda/10.0/include:${C_INCLUDE_PATH}
+export CPLUS_INCLUDE_PATH=${HOME}/GPU/include:/apps/packages/cuda/10.0/include:${CPLUS_INCLUDE_PATH}
 
-C_INCLUDE_PATH=${HOME}/GPU/include:${C_INCLUDE_PATH}
-CPLUS_INCLUDE_PATH=${HOME}/GPU/include:${CPLUS_INCLUDE_PATH}
+
+export OPT=${HOME}/opt
+export C_INCLUDE_PATH=${OPT}/include:${C_INCLUDE_PATH}
+export CPLUS_INCLUDE_PATH=${OPT}/include:${CPLUS_INCLUDE_PATH}
+export LD_LIBRARY_PATH=${OPT}/lib:${LD_LIBRARY_PATH}
+
+module load gcc
+module load cuda
+module load openmpi

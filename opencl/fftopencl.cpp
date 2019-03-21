@@ -14,204 +14,191 @@ public:
 };
 
 fft_opencl::fft_opencl(const std::vector<size_t>& i_dimensions, const bool i_inverse) {
+    
   dimensions=i_dimensions;
   inverse=i_inverse;
+  int i;
   for(i=0; i<n_dimensions(); ++i){
     n_x[i]=size(i);   
   }
-
   
-  cl_platform_id platform;
   clGetPlatformIDs(1, &platform, NULL);
-  cl_device_id device;
-  clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 1, &device, NULL);
+  clGetDeviceIDs(platform, CL_DEVICE_TYPE_DEFAULT, 1, &device, NULL);
+  cl_context_properties context_properties[3];
+  context_properties[0]=CL_CONTEXT_PLATFORM;
+  context_properties[1]=(cl_context_properties)platform;
+  context_properties[2]=0;
+  int error;
+  context=clCreateContext(context_properties, 1, &device, NULL, NULL, &error);
+  queue=clCreateCommandQueue(context, device, 0, &error);
   
+  clfftInitSetupData(&fft_setup);
+  clfftSetup(&fft_setup);
   
 }
 
-fft_opencl::~fft_opencl(){
-
+fft_opencl::~fft_opencl(){   
+  // clfftTeardown(); // Causes double free error, even if in main
+  clReleaseCommandQueue(queue);
+  clReleaseContext(context);
 }
 
 
 
 fft_opencl_c2c::fft_opencl_c2c(const std::vector<size_t>& i_dimensions, const bool i_inverse) : fft_opencl(i_dimensions, i_inverse){
-  int i;
+    
+  data=new double[2*size()+2];
+  int error;
+  d_data=clCreateBuffer(context, CL_MEM_READ_WRITE, 2*size()*sizeof(double), NULL, &error);
   
-  signal=(cl_complex*) malloc(size()*sizeof(cl_complex));
-  transform=(cl_complex*) malloc(size_complex()*sizeof(cl_complex));
-  
-  context=clCreateContext(NULL, 1, &device, NULL, NULL, &err);
-  queue=clCreateCommandQueueWithProperties(context, device, 0, &err);
-
   clfftDim dim;
-  switch(size()){
+  switch(n_dimensions()){
       case 1:
         dim=CLFFT_1D;
         break;
       case 2:
         dim=CLFFT_2D;
         break;
-      case 1:
+      case 3:
         dim=CLFFT_3D;
         break; 
       default:
         throw fft_opencl_exception("Works only in 1, 2 or 3 dimensions.");
   }
-  
   clfftCreateDefaultPlan(&plan, context, dim, n_x);
   clfftSetPlanPrecision(plan, CLFFT_DOUBLE);
-  clfftSetLayout(plan, CLFFT_COMPLEX_PLANAR, CLFFT_COMPLEX_PLANAR);
-  clfftSetResultLocation(plan, CLFFT_OUTOFPLACE);
-
-  cl_int error;
-  unsigned long buffer_size;
-  clfftGetTmpBufSize(plan, &buffer_size);
-  buffer=clCreateBuffer(context, CL_MEM_READ_WRITE, buffer_size, 0, &error);
-  
-  d_signal=clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, size()*sizeof(cl_complex), signal, &error);
-  d_transform=clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, size_complex()*sizeof(cl_complex), signal, &error);
+  clfftSetLayout(plan, CLFFT_COMPLEX_INTERLEAVED, CLFFT_COMPLEX_INTERLEAVED);
+  clfftSetResultLocation(plan, CLFFT_INPLACE);
+  clfftBakePlan(plan, 1, &queue, NULL, NULL);
+ 
 }
 
 fft_opencl_c2c::~fft_opencl_c2c(){
+  delete[] data;
+  clReleaseMemObject(d_data);
   clfftDestroyPlan(&plan);
-  clfftTeardown();
-  clReleaseCommandQueue(queue);
-  clReleaseContext(context);
-  clReleaseMemObject(buffer);
-  clReleaseMemObject(d_signal);
-  clReleaseMemObject(d_transform);
 }
 
 int fft_opencl_c2c::compute(::complex* in, ::complex* out) const{
-    
+
   size_t i;
   if(!inverse){
     for(i=0; i<size(); ++i){
-      signal_re[i]=in[i].real();
-      signal_im[i]=in[i].imag();
+      data[2*i]=in[i].real();
+      data[2*i+1]=in[i].imag();
     }
+    clEnqueueWriteBuffer(queue, d_data, CL_TRUE, 0, 2*size()*sizeof(double),  data, 0, NULL, NULL);
     
-    clfftBakePlan(plan, 1, &queue, NULL, NULL);
+    cl_command_queue queues[1];
+    queues[0]=queue;
+    clfftEnqueueTransform(plan, CLFFT_FORWARD, 1, queues, 0, NULL, NULL, &d_data, NULL, NULL);
+    clFinish(queue);
     
-    clEnqueueWriteBuffer(queue, d_signal, CL_TRUE, 0,  size()*sizeof(cl_complex),  signal, 0, NULL, NULL);
-        
-    clfftEnqueueTransform(plan, CLFFT_FORWARD, n_dimensions(), &queue, 0, NULL, NULL, d_signal, d_transform, buffer);
-  
-    clEnqueueReadBuffer(queue, d_transform, CL_TRUE, 0,  size_complex()*sizeof(cl_complex),  transform, 0, NULL, NULL);
+    clEnqueueReadBuffer(queue, d_data, CL_TRUE, 0, 2*size_complex()*sizeof(double),  data, 0, NULL, NULL);
     
     for(i=0; i<size_complex(); ++i){
-      out[i].x=transform[i][0];
-      out[i].y=transform[i][1];
+      out[i].x=data[2*i];
+      out[i].y=data[2*i+1];
     }
   }else{
     for(i=0; i<size_complex(); ++i){
-      transform[i][0]=out[i].real();
-      transform[i][1]=out[i].imag();
+      data[2*i]=out[i].real();
+      data[2*i+1]=out[i].imag();
     }
     
-    clfftBakePlan(plan, 1, &queue, NULL, NULL);
-    
-    clEnqueueWriteBuffer(queue, d_transform, CL_TRUE, 0,  size_complex()*sizeof(cl_complex), transform, 0, NULL, NULL);
-        
-    clfftEnqueueTransform(plan, CLFFT_BACKWARD, n_dimensions(), &queue, 0, NULL, NULL, d_transform, d_signal, buffer);
+    clEnqueueWriteBuffer(queue, d_data, CL_TRUE, 0,  2*size()*sizeof(double),  data, 0, NULL, NULL);
   
-    clEnqueueReadBuffer(queue, d_signal, CL_TRUE, 0,  size()*sizeof(cl_complex),  signal, 0, NULL, NULL);
+    cl_command_queue queues[1];
+    queues[0]=queue;
+    clfftEnqueueTransform(plan, CLFFT_BACKWARD, 1, queues, 0, NULL, NULL, &d_data, NULL, NULL);
+    clFinish(queue);
+    
+    clEnqueueReadBuffer(queue, d_data, CL_TRUE, 0,  2*size_complex()*sizeof(double),  data, 0, NULL, NULL);
     
     for(i=0; i<size(); ++i){
-      in[i].x=signal[i][0]/size();
-      in[i].y=signal[i][0]/size();
+      in[i].x=data[2*i]/size();
+      in[i].y=data[2*i+1]/size();
     }
   }
   return 0;
+  
 }
 
 
 fft_opencl_r2c::fft_opencl_r2c(const std::vector<size_t>& i_dimensions, const bool i_inverse) : fft_opencl(i_dimensions, i_inverse){
-  int i;
-  
-  signal=(cl_double*) malloc(size()*sizeof(cl_double));
-  transform=(cl_complex*) malloc(size_complex()*sizeof(cl_complex));
-  
-  context=clCreateContext(NULL, 1, &device, NULL, NULL, &err);
-  queue=clCreateCommandQueueWithProperties(context, device, 0, &err);
+  data=new double[2*size()+2];
+  int error;
+  d_data=clCreateBuffer(context, CL_MEM_READ_WRITE, (2*size()+2)*sizeof(double), NULL, &error);
 
   clfftDim dim;
-  switch(size()){
+  switch(n_dimensions()){
       case 1:
         dim=CLFFT_1D;
         break;
       case 2:
         dim=CLFFT_2D;
         break;
-      case 1:
+      case 3:
         dim=CLFFT_3D;
         break; 
       default:
         throw fft_opencl_exception("Works only in 1, 2 or 3 dimensions.");
   }
-  
   clfftCreateDefaultPlan(&plan, context, dim, n_x);
   clfftSetPlanPrecision(plan, CLFFT_DOUBLE);
-  clfftSetLayout(plan, CLFFT_FFT_REAL, CLFFT_HERMITIAN_INTERLEAVED);
-  clfftSetResultLocation(plan, CLFFT_OUTOFPLACE);
-
-  cl_int error;
-  unsigned long buffer_size;
-  clfftGetTmpBufSize(plan, &buffer_size);
-  buffer=clCreateBuffer(context, CL_MEM_READ_WRITE, buffer_size, 0, &error);
-  
-  d_signal=clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, size()*sizeof(cl_double), signal, &error);
-  d_transform=clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, size_complex()*sizeof(cl_complex), signal, &error);
-  
+  clfftSetLayout(plan, CLFFT_REAL, CLFFT_HERMITIAN_INTERLEAVED);
+  clfftSetResultLocation(plan, CLFFT_INPLACE);
+  clfftBakePlan(plan, 1, &queue, NULL, NULL);
 }
 
 fft_opencl_r2c::~fft_opencl_r2c(){
+  delete[] data;
+  clReleaseMemObject(d_data);
   clfftDestroyPlan(&plan);
-  clfftTeardown();
-  clReleaseCommandQueue(queue);
-  clReleaseContext(context);
-  clReleaseMemObject(buffer);
-  clReleaseMemObject(d_signal);
-  clReleaseMemObject(d_transform);
+  
 }
 
 int fft_opencl_r2c::compute(double* in, ::complex* out) const{
+    
   size_t i;
   if(!inverse){
     for(i=0; i<size(); ++i){
-      signal[i]=in[i];
+      data[i]=in[i];
     }
+    clEnqueueWriteBuffer(queue, d_data, CL_TRUE, 0,  size()*sizeof(double),  data, 0, NULL, NULL);
     
-    clfftBakePlan(plan, 1, &queue, NULL, NULL);
+    cl_command_queue queues[1];
+    queues[0]=queue;
+    clfftEnqueueTransform(plan, CLFFT_FORWARD, 1, queues, 0, NULL, NULL, &d_data, NULL, NULL);
+    clFinish(queue);
     
-    clEnqueueWriteBuffer(queue, d_signal, CL_TRUE, 0,  size()*sizeof(cl_double),  signal, 0, NULL, NULL);
-        
-    clfftEnqueueTransform(plan, CLFFT_FORWARD, n_dimensions(), &queue, 0, NULL, NULL, d_signal, d_transform, buffer);
-  
-    clEnqueueReadBuffer(queue, d_transform, CL_TRUE, 0,  size_complex()*sizeof(cl_complex),  transform, 0, NULL, NULL);
+    
+    clEnqueueReadBuffer(queue, d_data, CL_TRUE, 0, 2*size_complex()*sizeof(double),  data, 0, NULL, NULL);
     
     for(i=0; i<size_complex(); ++i){
-      out[i].x=transform[i][0];
-      out[i].y=transform[i][1];
+      out[i].x=data[2*i];
+      out[i].y=data[2*i+1];
+      std::cout << out[i] << "\n";
     }
   }else{
     for(i=0; i<size_complex(); ++i){
-      transform[i][0]=out[i].real();
-      transform[i][1]=out[i].imag();
+      data[2*i]=out[i].real();
+      data[2*i+1]=out[i].imag();
     }
     
-    clfftBakePlan(plan, 1, &queue, NULL, NULL);
-    
-    clEnqueueWriteBuffer(queue, d_transform, CL_TRUE, 0,  size_complex()*sizeof(cl_complex), transform, 0, NULL, NULL);
-        
-    clfftEnqueueTransform(plan, CLFFT_BACKWARD, n_dimensions(), &queue, 0, NULL, NULL, d_transform, d_signal, buffer);
+    clEnqueueWriteBuffer(queue, d_data, CL_TRUE, 0,  2*size_complex()*sizeof(double),  data, 0, NULL, NULL);
   
-    clEnqueueReadBuffer(queue, d_signal, CL_TRUE, 0,  size()*sizeof(cl_double),  signal, 0, NULL, NULL);
+    cl_command_queue queues[1];
+    queues[0]=queue;
+    clfftEnqueueTransform(plan, CLFFT_BACKWARD, 1, queues, 0, NULL, NULL, &d_data, NULL, NULL);
+    clFinish(queue);
+    
+    clEnqueueReadBuffer(queue, d_data, CL_TRUE, 0,  size()*sizeof(double),  data, 0, NULL, NULL);
     
     for(i=0; i<size(); ++i){
-      in[i]=signal[i]/size();
+      in[i]=data[i]/size();
     }
   }
   return 0;
+    
 }
