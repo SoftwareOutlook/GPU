@@ -1,5 +1,5 @@
 CXX=g++ 
-CFLAGS=-std=c++11 -g2 #-I${HOME}/GPU/include -I${HOME}/opt/include -I/apps/packages/cuda/10.0/include
+CFLAGS=-std=c++11 -O3
 LFLAGS=-lOpenCL -lboost_system -lboost_chrono -lclFFT -L${HOME}/opt/lib
 
 all: test
