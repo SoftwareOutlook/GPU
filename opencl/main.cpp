@@ -84,8 +84,21 @@ int main(int argc, char** argv){
 
     std::cout << "    Multiplication\n";
 
-    // OpenCL 
-    int n_queues=4;
+    // OpenCL
+
+    int n_queues=1;
+    std::cout << "      OpenCL (" << n_queues << " queues)\n";
+    opencl_product_r opr1(sig.size(), n_queues);
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      opr1.compute(sig, coils[i], multiplied_signals[i]);
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "\n";  
+
+    
+    n_queues=4;
     std::cout << "      OpenCL (" << n_queues << " queues)\n";
     opencl_product_r opr(sig.size(), n_queues);
     sw.start();
@@ -106,10 +119,7 @@ int main(int argc, char** argv){
 
     fft_opencl_r2c fo({n_x[0]});
     
-    
-    for(i=0; i<fo.size(); ++i){
-      std::cout << "signal: " << multiplied_signals[0].get(i) << "\n";   
-    } 
+     
     
     sw.start();
     for(i=0; i<n_coils; ++i){
@@ -119,9 +129,6 @@ int main(int argc, char** argv){
 
     std::cout << "          Time:  " << sw.get() << " s\n";    
 
-    for(i=0; i<fo.size_complex(); ++i){
-      std::cout << "transform: " << transforms[0].get(i) << "\n";   
-    }
     std::cout << "        Inverse\n";
 
     fft_opencl_r2c foi({n_x[0]}, true);
@@ -168,6 +175,9 @@ int main(int argc, char** argv){
     for(i=0; i<n_coils; ++i){
       coils.push_back(coil);   
     }
+
+   
+
     
     // Multiplied signals
     std::vector<multiarray<::complex>> multiplied_signals;
@@ -178,6 +188,32 @@ int main(int argc, char** argv){
       transforms.push_back(multiarray<::complex>({n_x[0]}));
       inverse_transforms.push_back(multiarray<::complex>({n_x[0]}));
     }
+
+
+    int n_queues=1;
+    std::cout << "      OpenCL (" << n_queues << " queues)\n";
+    opencl_product_c opc1(sig.size(), n_queues);
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      opc1.compute(sig, coils[i], multiplied_signals[i]);
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "\n";
+
+    n_queues=4;
+    std::cout << "      OpenCL (" << n_queues << " queues)\n";
+    opencl_product_c opc(sig.size(), n_queues);
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      opc.compute(sig, coils[i], multiplied_signals[i]);
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "\n";
+
+
+    
     
     // FFT
     std::cout << "    FFT\n";
@@ -384,7 +420,7 @@ int main(int argc, char** argv){
   n_x[1]=dim[1];
   n_x[2]=dim[2];
   
-  /*
+  
   // R <-> HC
   
   {
@@ -439,24 +475,24 @@ int main(int argc, char** argv){
     }
     
      std::cout << "    FFT\n";
-    // CUDA
-    std::cout << "      CUDA\n";
+    // OpenCL
+    std::cout << "      OpenCL\n";
     std::cout << "        Direct\n";
 
-    fft_cuda_r2c fc({n_x[0], n_x[1], n_x[2]});
+    fft_opencl_r2c fo({n_x[0], n_x[1], n_x[2]});
     sw.start();
     for(i=0; i<n_coils; ++i){
-      fc.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
+      fo.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
     }
     sw.stop();
     std::cout << "          Time:  " << sw.get() << " s\n";    
 
     std::cout << "        Inverse\n";
 
-    fft_cuda_r2c fci({n_x[0], n_x[1], n_x[2]}, true);
+    fft_opencl_r2c foi({n_x[0], n_x[1], n_x[2]}, true);
     sw.start();
     for(i=0; i<n_coils; ++i){
-      fci.compute(inverse_transforms[i].pointer(), transforms[i].pointer());
+      foi.compute(inverse_transforms[i].pointer(), transforms[i].pointer());
     }
     sw.stop();
     std::cout << "          Time:  " << sw.get() << " s\n";
@@ -515,24 +551,24 @@ int main(int argc, char** argv){
     }
 
         std::cout << "    FFT\n";
-    // CUDA
-    std::cout << "      CUDA\n";
+    // OpenCL
+    std::cout << "      OpenCL\n";
     std::cout << "        Direct\n";
 
-    fft_cuda_c2c fc({n_x[0], n_x[1], n_x[2]});
+    fft_opencl_c2c fo({n_x[0], n_x[1], n_x[2]});
     sw.start();
     for(i=0; i<n_coils; ++i){
-      fc.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
+      fo.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
     }
     sw.stop();
     std::cout << "          Time:  " << sw.get() << " s\n";    
 
     std::cout << "        Inverse\n";
 
-    fft_cuda_c2c fci({n_x[0], n_x[1], n_x[2]}, true);
+    fft_opencl_c2c foi({n_x[0], n_x[1], n_x[2]}, true);
     sw.start();
     for(i=0; i<n_coils; ++i){
-      fci.compute(inverse_transforms[i].pointer(), transforms[i].pointer());
+      foi.compute(inverse_transforms[i].pointer(), transforms[i].pointer());
     }
     sw.stop();
     std::cout << "          Time:  " << sw.get() << " s\n";
@@ -545,8 +581,7 @@ int main(int argc, char** argv){
     std::cout << "\n\n";
 
   }  
-   
-  */ 
+    
   //fftw_cleanup_threads();
   return 0;
 

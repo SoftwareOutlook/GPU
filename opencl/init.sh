@@ -3,8 +3,8 @@ export CPLUS_INCLUDE_PATH=${HOME}/GPU/include:/apps/packages/cuda/10.0/include:$
 
 
 export OPT=${HOME}/opt
-export C_INCLUDE_PATH=${OPT}/include:${C_INCLUDE_PATH}
-export CPLUS_INCLUDE_PATH=${OPT}/include:${CPLUS_INCLUDE_PATH}
+export C_INCLUDE_PATH=../include:${OPT}/include:${C_INCLUDE_PATH}
+export CPLUS_INCLUDE_PATH=../include:${OPT}/include:${CPLUS_INCLUDE_PATH}
 export LD_LIBRARY_PATH=${OPT}/lib:${LD_LIBRARY_PATH}
 
 module load gcc

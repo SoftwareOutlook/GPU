@@ -1,7 +1,7 @@
 CXX=g++
 
 CFLAGS=-std=c++11 -O3 -lboost_system -lboost_chrono 
-LFLAGS=-lboost_system -lboost_chrono -fopenmp
+LFLAGS=-lboost_system -lboost_chrono -fopenmp -L${HOME}/opt/lib
 
 
 all: test

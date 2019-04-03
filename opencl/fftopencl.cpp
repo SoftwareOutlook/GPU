@@ -178,8 +178,7 @@ int fft_opencl_r2c::compute(double* in, ::complex* out) const{
     for(i=0; i<size_complex(); ++i){
       out[i].x=data[2*i];
       out[i].y=data[2*i+1];
-      std::cout << out[i] << "\n";
-    }
+}
   }else{
     for(i=0; i<size_complex(); ++i){
       data[2*i]=out[i].real();
