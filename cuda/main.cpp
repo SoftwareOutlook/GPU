@@ -10,6 +10,7 @@
 #include "fftcuda.hpp"
 #include <omp.h>
 #include "openmpproduct.hpp"
+#include "fft.hpp"
 
 using namespace std;
 
@@ -130,6 +131,40 @@ int main(int argc, char** argv){
 
    
     std::cout << "    FFT\n";
+
+    // FFT
+
+        // FFTW
+    std::cout << "    FFTW\n";
+    std::cout << "      Direct\n";
+    
+    fftw_r2c fw(n_dimensions, n_x);
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      fw.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    
+    
+    std::cout << "      Inverse\n";
+    
+    fftw_r2c fwi(n_dimensions, n_x, true);
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      fwi.compute(inverse_transforms[i].pointer(), transforms[i].pointer());
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    
+    error=0;
+    for(i=0; i<n_coils; ++i){
+      error=error+(multiplied_signals[i]-inverse_transforms[i]).norm();
+    }
+    std::cout << "      Error: " << error << "\n";
+    std::cout << "\n";
+
+    
     // CUDA
     std::cout << "      CUDA\n";
     std::cout << "        Direct\n";
@@ -246,6 +281,38 @@ int main(int argc, char** argv){
 
     // FFT
     std::cout << "    FFT\n";
+
+    // FFTW
+    std::cout << "    FFTW\n";
+    std::cout << "      Direct\n";
+    
+    fftw_c2c fw(n_dimensions, n_x);
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      fw.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    
+    
+    std::cout << "      Inverse\n";
+    
+    fftw_c2c fwi(n_dimensions, n_x, true);
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      fwi.compute(inverse_transforms[i].pointer(), transforms[i].pointer());
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    
+    error=0;
+    for(i=0; i<n_coils; ++i){
+      error=error+(multiplied_signals[i]-inverse_transforms[i]).norm();
+    }
+    std::cout << "      Error: " << error << "\n";
+    std::cout << "\n";
+
+    
     // CUDA
     std::cout << "      CUDA\n";
     std::cout << "        Direct\n";
@@ -335,6 +402,37 @@ int main(int argc, char** argv){
     }
    
     std::cout << "    FFT\n";
+
+    // FFTW
+    std::cout << "    FFTW\n";
+    std::cout << "      Direct\n";
+    
+    fftw_r2c fw(n_dimensions, n_x);
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      fw.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    
+    
+    std::cout << "      Inverse\n";
+    
+    fftw_r2c fwi(n_dimensions, n_x, true);
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      fwi.compute(inverse_transforms[i].pointer(), transforms[i].pointer());
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    
+    error=0;
+    for(i=0; i<n_coils; ++i){
+      error=error+(multiplied_signals[i]-inverse_transforms[i]).norm();
+    }
+    std::cout << "      Error: " << error << "\n";
+    std::cout << "\n";
+    
     // CUDA
     std::cout << "      CUDA\n";
     std::cout << "        Direct\n";
@@ -407,6 +505,37 @@ int main(int argc, char** argv){
     }
     
     std::cout << "    FFT\n";
+
+    // FFTW
+    std::cout << "    FFTW\n";
+    std::cout << "      Direct\n";
+    
+    fftw_c2c fw(n_dimensions, n_x);
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      fw.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    
+    
+    std::cout << "      Inverse\n";
+    
+    fftw_c2c fwi(n_dimensions, n_x, true);
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      fwi.compute(inverse_transforms[i].pointer(), transforms[i].pointer());
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    
+    error=0;
+    for(i=0; i<n_coils; ++i){
+      error=error+(multiplied_signals[i]-inverse_transforms[i]).norm();
+    }
+    std::cout << "      Error: " << error << "\n";
+    std::cout << "\n";
+    
     // CUDA
     std::cout << "      CUDA\n";
     std::cout << "        Direct\n";
@@ -501,6 +630,37 @@ int main(int argc, char** argv){
     }
     
      std::cout << "    FFT\n";
+
+    // FFTW
+    std::cout << "    FFTW\n";
+    std::cout << "      Direct\n";
+    
+    fftw_r2c fw(n_dimensions, n_x);
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      fw.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    
+    
+    std::cout << "      Inverse\n";
+    
+    fftw_r2c fwi(n_dimensions, n_x, true);
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      fwi.compute(inverse_transforms[i].pointer(), transforms[i].pointer());
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    
+    error=0;
+    for(i=0; i<n_coils; ++i){
+      error=error+(multiplied_signals[i]-inverse_transforms[i]).norm();
+    }
+    std::cout << "      Error: " << error << "\n";
+    std::cout << "\n";
+     
     // CUDA
     std::cout << "      CUDA\n";
     std::cout << "        Direct\n";
@@ -577,6 +737,38 @@ int main(int argc, char** argv){
     }
 
         std::cout << "    FFT\n";
+
+    // FFTW
+    std::cout << "    FFTW\n";
+    std::cout << "      Direct\n";
+    
+    fftw_c2c fw(n_dimensions, n_x);
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      fw.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    
+    
+    std::cout << "      Inverse\n";
+    
+    fftw_c2c fwi(n_dimensions, n_x, true);
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      fwi.compute(inverse_transforms[i].pointer(), transforms[i].pointer());
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    
+    error=0;
+    for(i=0; i<n_coils; ++i){
+      error=error+(multiplied_signals[i]-inverse_transforms[i]).norm();
+    }
+    std::cout << "      Error: " << error << "\n";
+    std::cout << "\n";
+
+	
     // CUDA
     std::cout << "      CUDA\n";
     std::cout << "        Direct\n";

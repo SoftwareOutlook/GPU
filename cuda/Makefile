@@ -1,7 +1,7 @@
 CXX=nvcc
 
 CFLAGS=-std=c++11 -O3 -lboost_system -lboost_chrono -I${HOME}/GPU/include -I${HOME}/opt/include
-LFLAGS=-lboost_system -lboost_chrono -lcufft -Xcompiler -fopenmp -L${HOME}/opt/lib
+LFLAGS=-lboost_system -lboost_chrono -lcufft -Xcompiler -fopenmp -L${HOME}/opt/lib -lfftw3
 
 
 all: test
