@@ -329,11 +329,59 @@ int main(int argc, char** argv){
     std::vector<multiarray<::complex>> transforms;
     std::vector<multiarray<double>> inverse_transforms;
     for(i=0; i<n_coils; ++i){
-      multiplied_signals.push_back(sig*coils[i]); 
+      //     multiplied_signals.push_back(sig*coils[i]);
+      multiplied_signals.push_back(multiarray<double>({n_x[0], n_x[1]}));
       transforms.push_back(multiarray<::complex>({n_x[0], n_x[1]/*/2+1*/}));
       inverse_transforms.push_back(multiarray<double>({n_x[0], n_x[1]}));
     }
-   
+
+
+    std::cout << "    Multiplication\n";
+
+    // CPU
+    std::cout << "      CPU\n";
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      multiplied_signals[i]=sig*coils[i];
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "\n";
+
+    // OpenMP
+    std::cout << "      OpenMP\n";
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      openmp_product(sig, coils[i], multiplied_signals[i]);
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "\n";
+
+    // CUDA
+    std::cout << "      CUDA\n";
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      cuda_product(sig, coils[i], multiplied_signals[i]);
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "\n";   
+
+    // CUDA (streams)
+    int n_streams=32;
+    std::cout << "      CUDA (" << n_streams << " streams)\n";
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      cuda_product(sig, coils[i], multiplied_signals[i], n_streams);
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "\n";   
+
+
+
+    
     std::cout << "    FFT\n";
     // CUDA
     std::cout << "      CUDA\n";
@@ -401,10 +449,57 @@ int main(int argc, char** argv){
     std::vector<multiarray<::complex>> transforms;
     std::vector<multiarray<::complex>> inverse_transforms;
     for(i=0; i<n_coils; ++i){
-      multiplied_signals.push_back(sig*coils[i]); 
+      //  multiplied_signals.push_back(sig*coils[i]);
+      multiplied_signals.push_back(multiarray<::complex>({n_x[0], n_x[1]}));
       transforms.push_back(multiarray<::complex>({n_x[0], n_x[1]}));
       inverse_transforms.push_back(multiarray<::complex>({n_x[0], n_x[1]}));
     }
+
+
+    std::cout << "    Multiplication\n";
+
+    // CPU
+    std::cout << "      CPU\n";
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      multiplied_signals[i]=sig*coils[i];
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "\n";
+
+    // OpenMP
+    std::cout << "      OpenMP\n";
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      openmp_product(sig, coils[i], multiplied_signals[i]);
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "\n";
+
+    // CUDA
+    std::cout << "      CUDA\n";
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      cuda_product(sig, coils[i], multiplied_signals[i]);
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "\n";   
+
+    // CUDA (streams)
+    int n_streams=32;
+    std::cout << "      CUDA (" << n_streams << " streams)\n";
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      cuda_product(sig, coils[i], multiplied_signals[i], n_streams);
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "\n";   
+
+
     
     std::cout << "    FFT\n";
     // CUDA
@@ -495,10 +590,57 @@ int main(int argc, char** argv){
     std::vector<multiarray<::complex>> transforms;
     std::vector<multiarray<double>> inverse_transforms;
     for(i=0; i<n_coils; ++i){
-      multiplied_signals.push_back(sig*coils[i]); 
+      //  multiplied_signals.push_back(sig*coils[i]);
+      multiplied_signals.push_back(multiarray<double>({n_x[0], n_x[1], n_x[2]}));
       transforms.push_back(multiarray<::complex>({n_x[0], n_x[1], n_x[2]/2+1}));
       inverse_transforms.push_back(multiarray<double>({n_x[0], n_x[1], n_x[2]}));
     }
+
+
+    std::cout << "    Multiplication\n";
+
+    // CPU
+    std::cout << "      CPU\n";
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      multiplied_signals[i]=sig*coils[i];
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "\n";
+
+    // OpenMP
+    std::cout << "      OpenMP\n";
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      openmp_product(sig, coils[i], multiplied_signals[i]);
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "\n";
+
+    // CUDA
+    std::cout << "      CUDA\n";
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      cuda_product(sig, coils[i], multiplied_signals[i]);
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "\n";   
+
+    // CUDA (streams)
+    int n_streams=32;
+    std::cout << "      CUDA (" << n_streams << " streams)\n";
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      cuda_product(sig, coils[i], multiplied_signals[i], n_streams);
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "\n";   
+
+
     
      std::cout << "    FFT\n";
     // CUDA
@@ -571,11 +713,57 @@ int main(int argc, char** argv){
     std::vector<multiarray<::complex>> transforms;
     std::vector<multiarray<::complex>> inverse_transforms;
     for(i=0; i<n_coils; ++i){
-      multiplied_signals.push_back(sig*coils[i]); 
+      //   multiplied_signals.push_back(sig*coils[i]);
+      multiplied_signals.push_back(multiarray<::complex>({n_x[0], n_x[1], n_x[2]}));
       transforms.push_back(multiarray<::complex>({n_x[0], n_x[1], n_x[2]}));
       inverse_transforms.push_back(multiarray<::complex>({n_x[0], n_x[1], n_x[2]}));
     }
 
+
+    std::cout << "    Multiplication\n";
+
+    // CPU
+    std::cout << "      CPU\n";
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      multiplied_signals[i]=sig*coils[i];
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "\n";
+
+    // OpenMP
+    std::cout << "      OpenMP\n";
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      openmp_product(sig, coils[i], multiplied_signals[i]);
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "\n";
+
+    // CUDA
+    std::cout << "      CUDA\n";
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      cuda_product(sig, coils[i], multiplied_signals[i]);
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "\n";   
+
+    // CUDA (streams)
+    int n_streams=32;
+    std::cout << "      CUDA (" << n_streams << " streams)\n";
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      cuda_product(sig, coils[i], multiplied_signals[i], n_streams);
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "\n";   
+
+    
         std::cout << "    FFT\n";
     // CUDA
     std::cout << "      CUDA\n";
