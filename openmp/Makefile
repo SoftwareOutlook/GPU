@@ -9,7 +9,7 @@ all: test
 test: main.o 
 	${CXX} main.o -o test ${LFLAGS} 
 
-main.o: openmp.hpp main.cpp 
+main.o: main.cpp 
 	${CXX} -c main.cpp ${CFLAGS}
 
 clean:

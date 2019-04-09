@@ -5,7 +5,7 @@
 #include "multiarray.hpp"
 #include <vector>
 #include <omp.h>
-#include "openmp.hpp"
+#include <openmp.hpp>
 
 using namespace std;
 

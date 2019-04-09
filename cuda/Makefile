@@ -9,7 +9,7 @@ all: test
 test: cudaproduct.o fftcuda.o main.o 
 	${CXX} cudaproduct.o fftcuda.o main.o -o test ${LFLAGS} 
 
-main.o: openmpproduct.hpp main.cpp 
+main.o:  main.cpp 
 	${CXX} -c main.cpp ${CFLAGS}
 
 cudaproduct.o: cudaproduct.cuh cudaproduct.cu

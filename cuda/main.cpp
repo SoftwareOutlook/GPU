@@ -9,7 +9,7 @@
 #include "cudaproduct.cuh"
 #include "fftcuda.hpp"
 #include <omp.h>
-#include "openmpproduct.hpp"
+#include <openmp.hpp>
 
 using namespace std;
 
@@ -97,16 +97,29 @@ int main(int argc, char** argv){
     std::cout << "        Time:  " << sw.get() << " s\n";
     std::cout << "\n";
 
-    // OpenMP
-    std::cout << "      OpenMP\n";
+
+    // OpenMP CPU
+    std::cout << "      OpenMP CPU\n";
     sw.start();
     for(i=0; i<n_coils; ++i){
-      openmp_product(sig, coils[i], multiplied_signals[i]);
+      openmp_product_cpu(sig, coils[i], multiplied_signals[i]);
     }
     sw.stop();
     std::cout << "        Time:  " << sw.get() << " s\n";
     std::cout << "\n";
 
+    // OpenMP GPU
+    std::cout << "      OpenMP GPU\n";
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      openmp_product_gpu(sig, coils[i], multiplied_signals[i]);
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "\n";
+
+
+    
     // CUDA
     std::cout << "      CUDA\n";
     sw.start();
@@ -212,15 +225,26 @@ int main(int argc, char** argv){
     std::cout << "        Time:  " << sw.get() << " s\n";
     std::cout << "\n";
  
-    // OpenMP
-    std::cout << "      OpenMP\n";
+    // OpenMP CPU
+    std::cout << "      OpenMP CPU\n";
     sw.start();
     for(i=0; i<n_coils; ++i){
-      openmp_product(sig, coils[i], multiplied_signals[i]);
+      openmp_product_cpu(sig, coils[i], multiplied_signals[i]);
     }
     sw.stop();
     std::cout << "        Time:  " << sw.get() << " s\n";
     std::cout << "\n";
+
+    // OpenMP GPU
+    std::cout << "      OpenMP GPU\n";
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      openmp_product_gpu(sig, coils[i], multiplied_signals[i]);
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "\n";
+
 
     // CUDA
     std::cout << "      CUDA\n";
@@ -348,15 +372,26 @@ int main(int argc, char** argv){
     std::cout << "        Time:  " << sw.get() << " s\n";
     std::cout << "\n";
 
-    // OpenMP
-    std::cout << "      OpenMP\n";
+    // OpenMP CPU
+    std::cout << "      OpenMP CPU\n";
     sw.start();
     for(i=0; i<n_coils; ++i){
-      openmp_product(sig, coils[i], multiplied_signals[i]);
+      openmp_product_cpu(sig, coils[i], multiplied_signals[i]);
     }
     sw.stop();
     std::cout << "        Time:  " << sw.get() << " s\n";
     std::cout << "\n";
+
+    // OpenMP GPU
+    std::cout << "      OpenMP GPU\n";
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      openmp_product_gpu(sig, coils[i], multiplied_signals[i]);
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "\n";
+
 
     // CUDA
     std::cout << "      CUDA\n";
@@ -468,15 +503,26 @@ int main(int argc, char** argv){
     std::cout << "        Time:  " << sw.get() << " s\n";
     std::cout << "\n";
 
-    // OpenMP
-    std::cout << "      OpenMP\n";
+    // OpenMP CPU
+    std::cout << "      OpenMP CPU\n";
     sw.start();
     for(i=0; i<n_coils; ++i){
-      openmp_product(sig, coils[i], multiplied_signals[i]);
+      openmp_product_cpu(sig, coils[i], multiplied_signals[i]);
     }
     sw.stop();
     std::cout << "        Time:  " << sw.get() << " s\n";
     std::cout << "\n";
+
+    // OpenMP GPU
+    std::cout << "      OpenMP GPU\n";
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      openmp_product_gpu(sig, coils[i], multiplied_signals[i]);
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "\n";
+
 
     // CUDA
     std::cout << "      CUDA\n";
@@ -609,11 +655,21 @@ int main(int argc, char** argv){
     std::cout << "        Time:  " << sw.get() << " s\n";
     std::cout << "\n";
 
-    // OpenMP
-    std::cout << "      OpenMP\n";
+    // OpenMP CPU
+    std::cout << "      OpenMP CPU\n";
     sw.start();
     for(i=0; i<n_coils; ++i){
-      openmp_product(sig, coils[i], multiplied_signals[i]);
+      openmp_product_cpu(sig, coils[i], multiplied_signals[i]);
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "\n";
+
+    // OpenMP GPU
+    std::cout << "      OpenMP GPU\n";
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      openmp_product_gpu(sig, coils[i], multiplied_signals[i]);
     }
     sw.stop();
     std::cout << "        Time:  " << sw.get() << " s\n";
@@ -732,15 +788,26 @@ int main(int argc, char** argv){
     std::cout << "        Time:  " << sw.get() << " s\n";
     std::cout << "\n";
 
-    // OpenMP
-    std::cout << "      OpenMP\n";
+    // OpenMP CPU
+    std::cout << "      OpenMP CPU\n";
     sw.start();
     for(i=0; i<n_coils; ++i){
-      openmp_product(sig, coils[i], multiplied_signals[i]);
+      openmp_product_cpu(sig, coils[i], multiplied_signals[i]);
     }
     sw.stop();
     std::cout << "        Time:  " << sw.get() << " s\n";
     std::cout << "\n";
+
+    // OpenMP GPU
+    std::cout << "      OpenMP GPU\n";
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      openmp_product_gpu(sig, coils[i], multiplied_signals[i]);
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "\n";
+
 
     // CUDA
     std::cout << "      CUDA\n";
