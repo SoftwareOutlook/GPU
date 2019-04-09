@@ -375,11 +375,32 @@ int main(int argc, char** argv){
     std::vector<multiarray<::complex>> transforms;
     std::vector<multiarray<::complex>> inverse_transforms;
     for(i=0; i<n_coils; ++i){
-      multiplied_signals.push_back(sig*coils[i]); 
+      multiplied_signals.push_back(multiarray<::complex>({n_x[0], n_x[1]})); 
       transforms.push_back(multiarray<::complex>({n_x[0], n_x[1]}));
       inverse_transforms.push_back(multiarray<::complex>({n_x[0], n_x[1]}));
     }
-    
+        int n_queues=1;
+    std::cout << "      OpenCL (" << n_queues << " queues)\n";
+    opencl_product_c opc1(sig.size(), n_queues);
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      opc1.compute(sig, coils[i], multiplied_signals[i]);
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "\n";
+
+    n_queues=4;
+    std::cout << "      OpenCL (" << n_queues << " queues)\n";
+    opencl_product_c opc(sig.size(), n_queues);
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      opc.compute(sig, coils[i], multiplied_signals[i]);
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "\n";
+
     std::cout << "    FFT\n";
     // CUDA
     std::cout << "      clFFT\n";

@@ -359,11 +359,31 @@ int main(int argc, char** argv){
     std::vector<multiarray<::complex>> transforms;
     std::vector<multiarray<::complex>> inverse_transforms;
     for(i=0; i<n_coils; ++i){
-      multiplied_signals.push_back(sig*coils[i]); 
+      multiplied_signals.push_back(multiarray<::complex>({n_x[0], n_x[1]})); 
       transforms.push_back(multiarray<::complex>({n_x[0], n_x[1]}));
       inverse_transforms.push_back(multiarray<::complex>({n_x[0], n_x[1]}));
     }
-  
+     std::cout << "    Multiplication\n";
+
+    // CPU
+    std::cout << "      CPU\n";
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      multiplied_signals[i]=sig*coils[i];
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "\n";
+
+    // OpenACC
+    std::cout << "      OpenACC\n";
+    sw.start();
+    for(i=0; i<n_coils; ++i){
+      openacc_product(sig, coils[i], multiplied_signals[i]);
+    }
+    sw.stop();
+    std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "\n";
     std::cout << "    FFT\n";
     // OpenACC
     std::cout << "      OpenACC\n";
