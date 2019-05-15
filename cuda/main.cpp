@@ -95,6 +95,7 @@ int main(int argc, char** argv){
     }
     sw.stop();
     std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "@ PRODUCT1DRCPU " << n_x[0] << " "  << sw.get() << "\n";
     std::cout << "\n";
 
 
@@ -106,6 +107,7 @@ int main(int argc, char** argv){
     }
     sw.stop();
     std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "@ PRODUCT1DROPENMPCPU " << n_x[0] << " "  << sw.get() << "\n";
     std::cout << "\n";
 
     // OpenMP GPU
@@ -116,6 +118,7 @@ int main(int argc, char** argv){
     }
     sw.stop();
     std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "@ PRODUCT1DROPENMPGPU " << n_x[0] << " "  << sw.get() << "\n";
     std::cout << "\n";
 
 
@@ -128,6 +131,7 @@ int main(int argc, char** argv){
     }
     sw.stop();
     std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "@ PRODUCT1DRCUDA " << n_x[0] << " "  << sw.get() << "\n";
     std::cout << "\n";   
 
     // CUDA (streams)
@@ -139,6 +143,7 @@ int main(int argc, char** argv){
     }
     sw.stop();
     std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "@ PRODUCT1DRCUDASTREAMS " << n_x[0] << " "  << sw.get() << "\n";
     std::cout << "\n";   
 
    
@@ -154,7 +159,7 @@ int main(int argc, char** argv){
     }
     sw.stop();
     std::cout << "          Time:  " << sw.get() << " s\n";    
-
+    std::cout << "@ FFT1DRCUDA " << n_x[0] << " "  << sw.get() << "\n";
     std::cout << "        Inverse\n";
 
     fft_cuda_r2c fci({n_x[0]}, true);
@@ -223,6 +228,7 @@ int main(int argc, char** argv){
     }
     sw.stop();
     std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "@ PRODUCT1DCCPU " << n_x[0] << " "  << sw.get() << "\n";
     std::cout << "\n";
  
     // OpenMP CPU
@@ -233,6 +239,7 @@ int main(int argc, char** argv){
     }
     sw.stop();
     std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "@ PRODUCT1DCOPENMPCPU " << n_x[0] << " "  << sw.get() << "\n";   
     std::cout << "\n";
 
     // OpenMP GPU
@@ -243,6 +250,7 @@ int main(int argc, char** argv){
     }
     sw.stop();
     std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "@ PRODUCT1DCOPENMPGPU " << n_x[0] << " "  << sw.get() << "\n";
     std::cout << "\n";
 
 
@@ -254,6 +262,7 @@ int main(int argc, char** argv){
     }
     sw.stop();
     std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "@ PRODUCT1DCCUDA " << n_x[0] << " "  << sw.get() << "\n";
     std::cout << "\n";   
 
     // CUDA (streams)
@@ -265,6 +274,7 @@ int main(int argc, char** argv){
     }
     sw.stop();
     std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "@ PRODUCT1DCCUDASTREAMS " << n_x[0] << " "  << sw.get() << "\n";
     std::cout << "\n";   
 
 
@@ -282,7 +292,7 @@ int main(int argc, char** argv){
     }
     sw.stop();
     std::cout << "          Time:  " << sw.get() << " s\n";    
-
+    std::cout << "@ FFT1DCCUDA " << n_x[0] << " "  << sw.get() << "\n";
     std::cout << "        Inverse\n";
 
     fft_cuda_c2c fci({n_x[0]}, true);
@@ -429,7 +439,7 @@ int main(int argc, char** argv){
     }
     sw.stop();
     std::cout << "          Time:  " << sw.get() << " s\n";    
-
+    std::cout << "@ FFT2DRCUDA " << n_x[0] << " "  << sw.get() << "\n";
     std::cout << "        Inverse\n";
 
     fft_cuda_r2c fci({n_x[0], n_x[1]}, true);
@@ -559,7 +569,7 @@ int main(int argc, char** argv){
     }
     sw.stop();
     std::cout << "          Time:  " << sw.get() << " s\n";    
-
+    std::cout << "@ FFT2DCCUDA " << n_x[0] << " "  << sw.get() << "\n";
     std::cout << "        Inverse\n";
 
     fft_cuda_c2c fci({n_x[0], n_x[1]}, true);
@@ -710,7 +720,7 @@ int main(int argc, char** argv){
     }
     sw.stop();
     std::cout << "          Time:  " << sw.get() << " s\n";    
-
+    std::cout << "@ FFT3DRCUDA " << n_x[0] << " "  << sw.get() << "\n";
     std::cout << "        Inverse\n";
 
     fft_cuda_r2c fci({n_x[0], n_x[1], n_x[2]}, true);
@@ -843,7 +853,7 @@ int main(int argc, char** argv){
     }
     sw.stop();
     std::cout << "          Time:  " << sw.get() << " s\n";    
-
+    std::cout << "@ FFT3DCCUDA " << n_x[0] << " "  << sw.get() << "\n";
     std::cout << "        Inverse\n";
 
     fft_cuda_c2c fci({n_x[0], n_x[1], n_x[2]}, true);

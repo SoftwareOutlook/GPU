@@ -88,6 +88,7 @@ int main(int argc, char** argv){
     }
     sw.stop();
     std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "@ PRODUCT1DRCPU " << n_x[0] << " "  << sw.get() << "\n";
     std::cout << "\n";
 
     // OpenMP CPU
@@ -98,6 +99,7 @@ int main(int argc, char** argv){
     }
     sw.stop();
     std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "@ PRODUCT1DROPENMPCPU " << n_x[0] << " "  << sw.get() << "\n";   
     std::cout << "\n";
 
     // OpenMP GPU
@@ -108,6 +110,7 @@ int main(int argc, char** argv){
     }
     sw.stop();
     std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "@ PRODUCT1DROPENMPGPU " << n_x[0] << " "  << sw.get() << "\n";
     std::cout << "\n";
 
   }
@@ -158,6 +161,7 @@ int main(int argc, char** argv){
     }
     sw.stop();
     std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "@ PRODUCT1DCCPU " << n_x[0] << " "  << sw.get() << "\n";
     std::cout << "\n";
  
     // OpenMP
@@ -168,6 +172,7 @@ int main(int argc, char** argv){
     }
     sw.stop();
     std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "@ PRODUCT1DCOPENMPCPU " << n_x[0] << " "  << sw.get() << "\n";
     std::cout << "\n";
 
     // OpenMP GPU
@@ -178,6 +183,7 @@ int main(int argc, char** argv){
     }
     sw.stop();
     std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "@ PRODUCT1DCOPENMPGPU " << n_x[0] << " "  << sw.get() << "\n";
     std::cout << "\n";
   }
   

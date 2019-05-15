@@ -95,6 +95,7 @@ int main(int argc, char** argv){
     }
     sw.stop();
     std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "@ PRODUCT1DROPENCL " << n_x[0] << " "  << sw.get() << "\n";
     std::cout << "\n";  
 
     
@@ -107,6 +108,7 @@ int main(int argc, char** argv){
     }
     sw.stop();
     std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "@ PRODUCT1DROPENCLQUEUES " << n_x[0] << " "  << sw.get() << "\n";
     std::cout << "\n";  
 
 //     
@@ -128,7 +130,7 @@ int main(int argc, char** argv){
     sw.stop();
 
     std::cout << "          Time:  " << sw.get() << " s\n";    
-
+    std::cout << "@ FFT1DROPENCL " << n_x[0] << " "  << sw.get() << "\n";
     std::cout << "        Inverse\n";
 
     fft_opencl_r2c foi({n_x[0]}, true);
@@ -199,6 +201,7 @@ int main(int argc, char** argv){
     }
     sw.stop();
     std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "@ PRODUCT1DCOPENCL " << n_x[0] << " "  << sw.get() << "\n";
     std::cout << "\n";
 
     n_queues=4;
@@ -210,6 +213,7 @@ int main(int argc, char** argv){
     }
     sw.stop();
     std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "@ PRODUCT1DCOPENCLQUEUES " << n_x[0] << " "  << sw.get() << "\n";
     std::cout << "\n";
 
 
@@ -229,7 +233,7 @@ int main(int argc, char** argv){
     }
     sw.stop();
     std::cout << "          Time:  " << sw.get() << " s\n";    
-
+    std::cout << "@ FFT1DCOPENCL " << n_x[0] << " "  << sw.get() << "\n";
     std::cout << "        Inverse\n";
 
     fft_opencl_c2c foi({n_x[0]}, true);
@@ -320,7 +324,7 @@ int main(int argc, char** argv){
     }
     sw.stop();
     std::cout << "          Time:  " << sw.get() << " s\n";    
-
+    std::cout << "@ FFT2DROPENCL " << n_x[0] << " "  << sw.get() << "\n";
     std::cout << "        Inverse\n";
 
     fft_opencl_r2c foi({n_x[0], n_x[1]}, true);
@@ -413,7 +417,7 @@ int main(int argc, char** argv){
     }
     sw.stop();
     std::cout << "          Time:  " << sw.get() << " s\n";    
-
+    std::cout << "@ FFT2DCOPENCL " << n_x[0] << " "  << sw.get() << "\n";
     std::cout << "        Inverse\n";
 
     fft_opencl_c2c foi({n_x[0], n_x[1]}, true);
@@ -507,7 +511,7 @@ int main(int argc, char** argv){
     }
     sw.stop();
     std::cout << "          Time:  " << sw.get() << " s\n";    
-
+    std::cout << "@ FFT3DROPENCL " << n_x[0] << " "  << sw.get() << "\n";
     std::cout << "        Inverse\n";
 
     fft_opencl_r2c foi({n_x[0], n_x[1], n_x[2]}, true);
@@ -583,7 +587,7 @@ int main(int argc, char** argv){
     }
     sw.stop();
     std::cout << "          Time:  " << sw.get() << " s\n";    
-
+    std::cout << "@ FFT3DCOPENCL " << n_x[0] << " "  << sw.get() << "\n";
     std::cout << "        Inverse\n";
 
     fft_opencl_c2c foi({n_x[0], n_x[1], n_x[2]}, true);

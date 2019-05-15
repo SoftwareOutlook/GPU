@@ -103,6 +103,8 @@ int main(int argc, char** argv){
     }
     sw.stop();
     std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "@ PRODUCT1DROPENACC " << n_x[0] << " "  << sw.get() << "\n";
+
     std::cout << "\n";
  
 
@@ -120,7 +122,7 @@ int main(int argc, char** argv){
     }
     sw.stop();
     std::cout << "          Time:  " << sw.get() << " s\n";    
-   
+    std::cout << "@ FFT1DROPENACC " << n_x[0] << " "  << sw.get() << "\n";   
     std::cout << "        Inverse\n";
 
     fft_openacc_r2c fci({n_x[0]}, true);
@@ -198,6 +200,7 @@ int main(int argc, char** argv){
     }
     sw.stop();
     std::cout << "        Time:  " << sw.get() << " s\n";
+    std::cout << "@ PRODUCT1DCOPENACC " << n_x[0] << " "  << sw.get() << "\n";   
     std::cout << "\n";
     
 
@@ -215,7 +218,7 @@ int main(int argc, char** argv){
     }
     sw.stop();
     std::cout << "          Time:  " << sw.get() << " s\n";    
-
+    std::cout << "@ FFT1DCOPENACC " << n_x[0] << " "  << sw.get() << "\n";   
     
     std::cout << "        Inverse\n";
 
@@ -304,7 +307,7 @@ int main(int argc, char** argv){
     }
     sw.stop();
     std::cout << "          Time:  " << sw.get() << " s\n";    
-
+    std::cout << "@ FFT2DROPENACC " << n_x[0] << " "  << sw.get() << "\n";   
     std::cout << "        Inverse\n";
 
     fft_openacc_r2c fci({n_x[0], n_x[1]}, true);
@@ -396,7 +399,7 @@ int main(int argc, char** argv){
     }
     sw.stop();
     std::cout << "          Time:  " << sw.get() << " s\n";    
-
+    std::cout << "@ FFT2DCOPENACC " << n_x[0] << " "  << sw.get() << "\n";   
     std::cout << "        Inverse\n";
 
     fft_openacc_c2c fci({n_x[0], n_x[1]}, true);
@@ -492,7 +495,7 @@ int main(int argc, char** argv){
  
     sw.stop();
     std::cout << "          Time:  " << sw.get() << " s\n";    
-
+    std::cout << "@ FFT3DROPENACC " << n_x[0] << " "  << sw.get() << "\n";   
     std::cout << "        Inverse\n";
 
     fft_openacc_r2c fci({n_x[0], n_x[1], n_x[2]}, true);
@@ -570,7 +573,7 @@ int main(int argc, char** argv){
   }
   sw.stop();
   std::cout << "          Time:  " << sw.get() << " s\n";    
-
+  std::cout << "@ FFT3DCOPENACC " << n_x[0] << " "  << sw.get() << "\n";  
   std::cout << "        Inverse\n";
 
   fft_openacc_c2c fci({n_x[0], n_x[1], n_x[2]}, true);
@@ -580,7 +583,7 @@ int main(int argc, char** argv){
   }
   sw.stop();
   std::cout << "          Time:  " << sw.get() << " s\n";
-    
+      
   error=0;
   for(i=0; i<n_coils; ++i){
   error=error+(multiplied_signals[i]-inverse_transforms[i]).norm();
