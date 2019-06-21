@@ -119,8 +119,19 @@ int main(int argc, char** argv){
     std::cout << "      clFFT\n";
     std::cout << "        Direct\n";
 
-    fft_opencl_r2c fo({n_x[0]});
+    sw.start();
+    fft_opencl_r2c fo_firstinit({n_x[0]});
+    sw.stop();
+    std::cout << "          Time:  " << sw.get() << " s\n";    
+    std::cout << "@ FFTOPENCLFIRSTINIT " << n_x[0] << " "  << sw.get() << "\n";
+     
+
     
+    sw.start();
+    fft_opencl_r2c fo({n_x[0]});
+    sw.stop();
+    std::cout << "          Time:  " << sw.get() << " s\n";    
+    std::cout << "@ FFT1DRINITOPENCL " << n_x[0] << " "  << sw.get() << "\n";
      
     
     sw.start();
@@ -128,9 +139,8 @@ int main(int argc, char** argv){
       fo.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
     }
     sw.stop();
-
     std::cout << "          Time:  " << sw.get() << " s\n";    
-    std::cout << "@ FFT1DROPENCL " << n_x[0] << " "  << sw.get() << "\n";
+    std::cout << "@ FFT1DREXECOPENCL " << n_x[0] << " "  << sw.get() << "\n";
     std::cout << "        Inverse\n";
 
     fft_opencl_r2c foi({n_x[0]}, true);
@@ -224,16 +234,20 @@ int main(int argc, char** argv){
     // OpenCL
     std::cout << "      OpenCL\n";
     std::cout << "        Direct\n";
-    
+
+    sw.start();
     fft_opencl_c2c fo({n_x[0]});
- 
+    sw.stop();
+    std::cout << "          Time:  " << sw.get() << " s\n";    
+    std::cout << "@ FFT1DCINITOPENCL " << n_x[0] << " "  << sw.get() << "\n";
+    
     sw.start();
     for(i=0; i<n_coils; ++i){
       fo.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
     }
     sw.stop();
     std::cout << "          Time:  " << sw.get() << " s\n";    
-    std::cout << "@ FFT1DCOPENCL " << n_x[0] << " "  << sw.get() << "\n";
+    std::cout << "@ FFT1DCEXECOPENCL " << n_x[0] << " "  << sw.get() << "\n";
     std::cout << "        Inverse\n";
 
     fft_opencl_c2c foi({n_x[0]}, true);
@@ -299,8 +313,12 @@ int main(int argc, char** argv){
       coils.push_back(coil);   
     }
     
-    
+    sw.start();
     fft_opencl_r2c fo({n_x[0], n_x[1]});
+    sw.stop();
+    std::cout << "          Time:  " << sw.get() << " s\n";    
+    std::cout << "@ FFT2DRINITOPENCL " << n_x[0] << " "  << sw.get() << "\n";
+
     
     // Multiplied signals
     std::vector<multiarray<double>> multiplied_signals;
@@ -324,9 +342,10 @@ int main(int argc, char** argv){
     }
     sw.stop();
     std::cout << "          Time:  " << sw.get() << " s\n";    
-    std::cout << "@ FFT2DROPENCL " << n_x[0] << " "  << sw.get() << "\n";
+    std::cout << "@ FFT2DREXECOPENCL " << n_x[0] << " "  << sw.get() << "\n";
     std::cout << "        Inverse\n";
 
+    
     fft_opencl_r2c foi({n_x[0], n_x[1]}, true);
     sw.start();
     for(i=0; i<n_coils; ++i){
@@ -410,14 +429,21 @@ int main(int argc, char** argv){
     std::cout << "      clFFT\n";
     std::cout << "        Direct\n";
 
+
+
+    sw.start();
     fft_opencl_c2c fo({n_x[0], n_x[1]});
+    sw.stop();
+    std::cout << "          Time:  " << sw.get() << " s\n";    
+    std::cout << "@ FFT2DCINITOPENCL " << n_x[0] << " "  << sw.get() << "\n";
+    
     sw.start();
     for(i=0; i<n_coils; ++i){
       fo.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
     }
     sw.stop();
     std::cout << "          Time:  " << sw.get() << " s\n";    
-    std::cout << "@ FFT2DCOPENCL " << n_x[0] << " "  << sw.get() << "\n";
+    std::cout << "@ FFT2DCEXECOPENCL " << n_x[0] << " "  << sw.get() << "\n";
     std::cout << "        Inverse\n";
 
     fft_opencl_c2c foi({n_x[0], n_x[1]}, true);
@@ -504,14 +530,20 @@ int main(int argc, char** argv){
     std::cout << "      OpenCL\n";
     std::cout << "        Direct\n";
 
+    sw.start();   
     fft_opencl_r2c fo({n_x[0], n_x[1], n_x[2]});
+    sw.stop();
+    std::cout << "          Time:  " << sw.get() << " s\n";    
+    std::cout << "@ FFT3DRINITOPENCL " << n_x[0] << " "  << sw.get() << "\n";
+
+    
     sw.start();
     for(i=0; i<n_coils; ++i){
       fo.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
     }
     sw.stop();
     std::cout << "          Time:  " << sw.get() << " s\n";    
-    std::cout << "@ FFT3DROPENCL " << n_x[0] << " "  << sw.get() << "\n";
+    std::cout << "@ FFT3DREXECOPENCL " << n_x[0] << " "  << sw.get() << "\n";
     std::cout << "        Inverse\n";
 
     fft_opencl_r2c foi({n_x[0], n_x[1], n_x[2]}, true);
@@ -580,14 +612,19 @@ int main(int argc, char** argv){
     std::cout << "      OpenCL\n";
     std::cout << "        Direct\n";
 
+    sw.start();
     fft_opencl_c2c fo({n_x[0], n_x[1], n_x[2]});
+    sw.stop();
+    std::cout << "          Time:  " << sw.get() << " s\n";    
+    std::cout << "@ FFT3DCINITOPENCL " << n_x[0] << " "  << sw.get() << "\n";
+    
     sw.start();
     for(i=0; i<n_coils; ++i){
       fo.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
     }
     sw.stop();
     std::cout << "          Time:  " << sw.get() << " s\n";    
-    std::cout << "@ FFT3DCOPENCL " << n_x[0] << " "  << sw.get() << "\n";
+    std::cout << "@ FFT3DCEXECOPENCL " << n_x[0] << " "  << sw.get() << "\n";
     std::cout << "        Inverse\n";
 
     fft_opencl_c2c foi({n_x[0], n_x[1], n_x[2]}, true);

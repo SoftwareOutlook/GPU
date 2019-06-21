@@ -152,14 +152,25 @@ int main(int argc, char** argv){
     std::cout << "      CUDA\n";
     std::cout << "        Direct\n";
 
+
+    sw.start();
+    fft_cuda_r2c fc_firstinit({n_x[0]});
+    sw.stop();    
+    std::cout << "@ FFTCUDAFIRSTINIT " << n_x[0] << " "  << sw.get() << "\n";
+    
+    sw.start();
     fft_cuda_r2c fc({n_x[0]});
+    sw.stop();
+    std::cout << "          Init. time:  " << sw.get() << " s\n";    
+    std::cout << "@ FFT1DRINITCUDA " << n_x[0] << " "  << sw.get() << "\n";
+
     sw.start();
     for(i=0; i<n_coils; ++i){
       fc.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
     }
     sw.stop();
     std::cout << "          Time:  " << sw.get() << " s\n";    
-    std::cout << "@ FFT1DRCUDA " << n_x[0] << " "  << sw.get() << "\n";
+    std::cout << "@ FFT1DREXECCUDA " << n_x[0] << " "  << sw.get() << "\n";
     std::cout << "        Inverse\n";
 
     fft_cuda_r2c fci({n_x[0]}, true);
@@ -284,15 +295,19 @@ int main(int argc, char** argv){
     std::cout << "      CUDA\n";
     std::cout << "        Direct\n";
     
+    sw.start();
     fft_cuda_c2c fc({n_x[0]});
- 
+    sw.stop();
+    std::cout << "          Time:  " << sw.get() << " s\n";    
+    std::cout << "@ FFT1DCINITCUDA " << n_x[0] << " "  << sw.get() << "\n";
+    
     sw.start();
     for(i=0; i<n_coils; ++i){
       fc.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
     }
     sw.stop();
     std::cout << "          Time:  " << sw.get() << " s\n";    
-    std::cout << "@ FFT1DCCUDA " << n_x[0] << " "  << sw.get() << "\n";
+    std::cout << "@ FFT1DCEXECCUDA " << n_x[0] << " "  << sw.get() << "\n";
     std::cout << "        Inverse\n";
 
     fft_cuda_c2c fci({n_x[0]}, true);
@@ -431,15 +446,20 @@ int main(int argc, char** argv){
     // CUDA
     std::cout << "      CUDA\n";
     std::cout << "        Direct\n";
-
+    
+    sw.start();
     fft_cuda_r2c fc({n_x[0], n_x[1]});
+    sw.stop();
+    std::cout << "          Init. time:  " << sw.get() << " s\n";    
+    std::cout << "@ FFT2DRINITCUDA " << n_x[0] << " "  << sw.get() << "\n";
+    
     sw.start();
     for(i=0; i<n_coils; ++i){
       fc.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
     }
     sw.stop();
-    std::cout << "          Time:  " << sw.get() << " s\n";    
-    std::cout << "@ FFT2DRCUDA " << n_x[0] << " "  << sw.get() << "\n";
+    std::cout << "          Exec. ime:  " << sw.get() << " s\n";    
+    std::cout << "@ FFT2DREXECCUDA " << n_x[0] << " "  << sw.get() << "\n";
     std::cout << "        Inverse\n";
 
     fft_cuda_r2c fci({n_x[0], n_x[1]}, true);
@@ -562,14 +582,21 @@ int main(int argc, char** argv){
     std::cout << "      CUDA\n";
     std::cout << "        Direct\n";
 
+
+    sw.start();
     fft_cuda_c2c fc({n_x[0], n_x[1]});
+    sw.stop();
+    std::cout << "          Time:  " << sw.get() << " s\n";    
+    std::cout << "@ FFT2DCINITCUDA " << n_x[0] << " "  << sw.get() << "\n";
+
+    
     sw.start();
     for(i=0; i<n_coils; ++i){
       fc.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
     }
     sw.stop();
     std::cout << "          Time:  " << sw.get() << " s\n";    
-    std::cout << "@ FFT2DCCUDA " << n_x[0] << " "  << sw.get() << "\n";
+    std::cout << "@ FFT2DCEXECCUDA " << n_x[0] << " "  << sw.get() << "\n";
     std::cout << "        Inverse\n";
 
     fft_cuda_c2c fci({n_x[0], n_x[1]}, true);
@@ -712,15 +739,20 @@ int main(int argc, char** argv){
     // CUDA
     std::cout << "      CUDA\n";
     std::cout << "        Direct\n";
-
+    
+    sw.start();
     fft_cuda_r2c fc({n_x[0], n_x[1], n_x[2]});
+    sw.stop();
+    std::cout << "          Time:  " << sw.get() << " s\n";    
+    std::cout << "@ FFT3DRINITCUDA " << n_x[0] << " "  << sw.get() << "\n";
+    
     sw.start();
     for(i=0; i<n_coils; ++i){
       fc.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
     }
     sw.stop();
     std::cout << "          Time:  " << sw.get() << " s\n";    
-    std::cout << "@ FFT3DRCUDA " << n_x[0] << " "  << sw.get() << "\n";
+    std::cout << "@ FFT3DREXECCUDA " << n_x[0] << " "  << sw.get() << "\n";
     std::cout << "        Inverse\n";
 
     fft_cuda_r2c fci({n_x[0], n_x[1], n_x[2]}, true);
@@ -846,14 +878,19 @@ int main(int argc, char** argv){
     std::cout << "      CUDA\n";
     std::cout << "        Direct\n";
 
+    sw.start();
     fft_cuda_c2c fc({n_x[0], n_x[1], n_x[2]});
+    sw.stop();
+    std::cout << "          Time:  " << sw.get() << " s\n";    
+    std::cout << "@ FFT3DCINITCUDA " << n_x[0] << " "  << sw.get() << "\n";
+    
     sw.start();
     for(i=0; i<n_coils; ++i){
       fc.compute(multiplied_signals[i].pointer(), transforms[i].pointer());
     }
     sw.stop();
     std::cout << "          Time:  " << sw.get() << " s\n";    
-    std::cout << "@ FFT3DCCUDA " << n_x[0] << " "  << sw.get() << "\n";
+    std::cout << "@ FFT3DCEXECCUDA " << n_x[0] << " "  << sw.get() << "\n";
     std::cout << "        Inverse\n";
 
     fft_cuda_c2c fci({n_x[0], n_x[1], n_x[2]}, true);
